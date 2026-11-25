@@ -390,6 +390,41 @@ export const EQUIPMENT_CASES = [
   // 400 ÷ 40 = 4 hr × ($50 + $50 + $40) = $560, "Minimum half day". Today's tier on the same line (the excavator
   // alone, a day and its mob): $2,146.98; its crew at its own half-day floor, 4 hr × ($50 + $40) = $360.
   { id: "onsite-host-small-fill", kind: "host", ...DIESEL, qty: 20, unit: "CCY", spread: { prod_per_day: 400, prod_unit: "CCY", crew_prod_per_day: 40, note: "By machines on site: Cut to fill: excavator, Subgrade: roller" }, rows: [comp("ex", "equipment", { eq_class_key: "EX-CRAWL-20T", eq_mode: "rental", eq_period: "site", eq_units: 1, eq_fuel_load: "med", eq_include_mob: false }), comp("roller", "equipment", { position: 1, eq_class_key: "CP-SD-84-SM", eq_mode: "rental", eq_period: "site", eq_units: 1, eq_fuel_load: "med", eq_include_mob: false }), comp("crew", "labor", { position: 2, crew: [{ role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "ex" }, { role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "roller" }, { role: "TEST Laborer", count: 1, hourly_wage: 40 }], production_rate: 12.5, production_basis: "units_per_hr" })], expect: { equipment: 101.28, crewHours: 4, labor: 560, warning: "Minimum half day" } },
+// D-1345 (the founder's D-1342 Q3, D-1343): the one-time "Pricing rule changed (rental billing, …)" note. The kept
+  //   pre-D-1336 solver (`equipment/periodsBefore.ts`, work days 1 / 5 / 20, overtime over 8 h × billed days) against
+  //   today's, and the amount: now less before. EX-CRAWL-20T $1,040 / $2,927 / $7,950.
+  // rule-solve-16d-10h: 16 work days × 10 h = 160 h. Now: 22 days on rent, one 4-week $7,950 carrying 160 h, no
+  //   overtime. Before: 16 billed work days, one 4-week $7,950 (3 weeks + 1 day $9,821), 160 − 8 × 16 = 32 h overtime at
+  //   the 4-week's $7,950 ÷ 160 = $49.6875 = $1,590 → $9,540. Now less before: −$1,590.00.
+  { id: "rule-solve-16d-10h", kind: "rule-solve", rates: [1040, 2927, 7950], days: 16, hours: 160, expect: { nowCost: 7950, beforeCost: 9540, beforeBilledDays: 16, beforeOvertimeHours: 32, beforeOvertimeCost: 1590, beforeLabel: "one 4-week", delta: -1590 } },
+  // rule-solve-7d-10h-same: 7 × 10 h = 70 h. Now: 9 days, week + 2 days $5,007 carrying 56 h, 14 h × 5,007 ÷ 56 =
+  //   $1,251.75. Before: 7 billed days, week + 2 days $5,007, 70 − 56 = 14 h at (5 × 2,927 ÷ 40 + 2 × 1,040 ÷ 8) ÷ 7 =
+  //   $89.41071 = $1,251.75. Both $6,258.75: nothing moved, $0 (no note).
+  { id: "rule-solve-7d-10h-same", kind: "rule-solve", rates: [1040, 2927, 7950], days: 7, hours: 70, expect: { nowCost: 6258.75, beforeCost: 6258.75, beforeBilledDays: 7, beforeOvertimeHours: 14, beforeLabel: "1 week + 2 days", delta: 0 } },
+  // rule-solve-friday-fixed-day: by the day, 3 work days from a Friday (start 2027-01-08). Now: Fri, Sat, Sun, Mon, Tue,
+  //   5 days on rent, $5,200. Before: 3 billed days (no start weekday), $3,120. Now less before: +$2,080.00.
+  { id: "rule-solve-friday-fixed-day", kind: "rule-solve", rates: [1040, 2927, 7950], days: 3, hours: 24, fixed: "day", start: "2027-01-08", expect: { nowCost: 5200, beforeCost: 3120, beforeBilledDays: 3, beforeOvertimeHours: 0, beforeLabel: "3 days", delta: 2080 } },
+  // rule-machine-16d-10h: the whole machine through `machineCost`, the library priced as before only by
+  //   `pricedBefore(lib, "rental_billing")`: rent $7,950 now, $9,540 before; the 12 % waiver moves with it ($954 now,
+  //   $1,144.80 before); the 1.3 % environmental fee is capped at $75 both ways ($103.35, $124.02); fuel and mob the
+  //   same. Now less before: −1,590 − 190.80 = −$1,780.80. The page's library is left as it was.
+  { id: "rule-machine-16d-10h", kind: "rule-machine", ...DIESEL, extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 16, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { nowEquipment: 7950, beforeEquipment: 9540, nowWaiver: 954, beforeWaiver: 1144.8, nowEnv: 75, beforeEnv: 75, fuelSame: true, mobSame: true, delta: -1780.8, libUntouched: true, beforeFlag: true } },
+  // rule-machine-2-units-location: the same on 2 machines at a 1.01 location factor: rent (7,950 − 9,540) × 1.01 × 2 =
+  //   −$3,211.80, its waiver × 12 % = −$385.416, the fee $75 a machine both ways: −$3,597.216 → −$3,597.22.
+  { id: "rule-machine-2-units-location", kind: "rule-machine", ...DIESEL, location: 1.01, extras: { waiver: 12, env: 1.3, cap: 75 }, input: { classKey: "EX-CRAWL-20T", mode: "rental", period: "auto", hours: 160, workDays: 16, hoursPerDay: 10, fuelLoad: "med", units: 2, includeMob: true }, expect: { delta: -3597.22, fuelSame: true, mobSame: true } },
+  // rule-machine-owned: an owned machine has no rental: $0 either way.
+  { id: "rule-machine-owned", kind: "rule-machine", ...DIESEL, input: { classKey: "EX-CRAWL-20T", mode: "owned", period: "hr", hours: 160, workDays: 16, hoursPerDay: 10, fuelLoad: "med", units: 1, includeMob: true }, expect: { delta: 0 } },
+  // The one-time rule (`ruleChanges.ts`). Owed: the estimate priced something before the change reached the bench
+  //   (2026-11-24 13:52 UTC), and no record yet. A record, a project first priced after, or one never priced: none.
+  { id: "rule-note-owed", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [], expect: { owed: ["rental_billing"] } },
+  { id: "rule-note-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:18:26Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-25T04:00:00Z" }], expect: { owed: [] } },
+  { id: "rule-note-priced-after", kind: "rule-note", owed: true, firstPricedAt: "2026-11-24T13:52:01Z", records: [], expect: { owed: [] } },
+  { id: "rule-note-never-priced", kind: "rule-note", owed: true, firstPricedAt: null, records: [], expect: { owed: [] } },
+  // The words (D-1343: no D-number on screen; the date as the app writes dates, the amount signed in its money format);
+  //   nothing moved, or less than half a cent: no note.
+  { id: "rule-note-words", kind: "rule-note", texts: [-1780.8, 2080, 0, 0.004, -5711], expect: { texts: ["Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$1,780.80", "Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by +$2,080.00", null, null, "Pricing rule changed (rental billing, Nov 24, 2026): this estimate changed by −$5,711.00"] } },
+  // The amount to the cent; a figure not known is no amount (never a made-up number).
+  { id: "rule-note-delta", kind: "rule-note", deltas: [[220792.123, 226503.127], [5, Number.NaN], [1.0000001, 1], [null, 1]], expect: { deltas: [-5711, null, 0, null] } },
   { id: "onsite-host-small-fill-tier", kind: "host", ...DIESEL, qty: 20, unit: "CCY", spread: { prod_per_day: 400, prod_unit: "CCY" }, rows: [comp("ex", "equipment", { eq_class_key: "EX-CRAWL-20T", eq_mode: "rental", eq_period: "auto", eq_units: 1, eq_fuel_load: "med", eq_include_mob: true }), comp("crew", "labor", { position: 1, crew: [{ role: "TEST Operator", count: 1, hourly_wage: 50, for_equipment: "ex" }, { role: "TEST Laborer", count: 1, hourly_wage: 40 }], production_rate: 12.5, production_basis: "units_per_hr" })], expect: { equipment: 2146.98, crewHours: 4, labor: 360, warning: "Minimum half day" } },
 ];
 
@@ -462,6 +497,8 @@ export async function runEquipment(page, eqlib) {
       const rx = await import("/src/lib/estimate/equipment/rentalExtras.ts");
       const bid = await import("/src/lib/estimate/bidSummary.ts");
       const costing = await import("/src/lib/estimate/costing.ts");
+      const rc = await import("/src/lib/estimate/ruleChanges.ts");
+      const pb = await import("/src/lib/estimate/equipment/periodsBefore.ts");
       const bundleFor = new Function(`return ${bundleSrc}`)();
       return cases.map((c) => {
         if (c.kind === "mob-catalog") {
@@ -724,6 +761,30 @@ export async function runEquipment(page, eqlib) {
           return { source: m.owned?.source ?? null, rate: m.owned?.rate ?? null };
         }
         if (c.kind === "match") return { keys: c.names.map((n) => match.suggest(n, eqlib.classes)[0]?.equip_key ?? null) };
+        // D-1345: the kept pre-D-1336 solver against today's, the machine both ways, and the one-time rule.
+        if (c.kind === "rule-solve") {
+          const [day, week, fourWeek] = c.rates;
+          const o = c.start ? { startWeekday: periods.weekdayOf(c.start) } : {};
+          const n = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed, o);
+          const b = pb.solveRentalBefore({ day, week, fourWeek }, c.days, c.hours, c.fixed, o);
+          return { nowCost: n.cost, beforeCost: b.cost, beforeBilledDays: b.billedDays, beforeOvertimeHours: b.overtimeHours, beforeOvertimeCost: b.overtimeCost, beforeLabel: periods.coverLabel(b), delta: rc.ruleDelta(n.cost, b.cost) };
+        }
+        if (c.kind === "rule-machine") {
+          const lib = resolve.library(bundleFor(eqlib, c));
+          const before = rc.pricedBefore(lib, "rental_billing");
+          const n = cost.machineCost(lib, c.input);
+          const b = cost.machineCost(before, c.input);
+          return {
+            nowEquipment: n.equipment, beforeEquipment: b.equipment, nowWaiver: n.extras?.waiver ?? 0, beforeWaiver: b.extras?.waiver ?? 0, nowEnv: n.extras?.envFee ?? 0, beforeEnv: b.extras?.envFee ?? 0,
+            fuelSame: (n.fuel?.cost ?? null) === (b.fuel?.cost ?? null), mobSame: (n.mob?.total ?? null) === (b.mob?.total ?? null),
+            delta: rc.ruleDelta(n.total, b.total), libUntouched: !rc.isBefore(lib, "rental_billing"), beforeFlag: rc.isBefore(before, "rental_billing"),
+          };
+        }
+        if (c.kind === "rule-note") {
+          if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records).map((x) => x.key) };
+          if (c.texts) return { texts: c.texts.map((d) => rc.ruleNoteText(rc.RULE_CHANGES[0], d, "USD")) };
+          return { deltas: c.deltas.map(([a, b]) => rc.ruleDelta(a, b)) };
+        }
         if (c.kind === "solve") {
           const [day, week, fourWeek] = c.rates;
           const r = periods.solveRental({ day, week, fourWeek }, c.days, c.hours, c.fixed, c.start ? { startWeekday: periods.weekdayOf(c.start) } : {});
