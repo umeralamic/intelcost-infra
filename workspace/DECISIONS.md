@@ -22474,7 +22474,7 @@ line, and can we do something else to show the selected workspace rather than or
   vehicles), even where the catalog lists a per-day activity for them; other classes are production when they have a
   production row on a Production activity.
 - **Rule 9 in the seed:** the two publishers' names in the catalog's text are written generically; the source id
-  `GORDIAN` is `CDP-CCI` (no row cited it).
+  `(the cost index's publisher's name)` is `CDP-CCI` (no row cited it).
 - **Quantity table:** the release's counts and "no rental rate stored as 0" checked from the database
   (`quantity-table.sh`), and the national rows dumped for the browser's equipment rows.
 
@@ -37008,3 +37008,248 @@ tables). Gates: api ruff, format, mypy, `alembic check` (chained into 2b756a4); 
 08:03:32–08:18:09 exit 0, 0 FAIL. FEATURES (no Live moves), MANAGER (In Progress rows D-1344 to D-1350),
 SINCE_ARCHIVE updated; mirror refreshed. Throwaways: none left. Digest 197e46191b36e443 at start and end. Item 1 proved,
 so NOTE_FOR_ABDULLAH lifts the hold on promoting umer-dev to staging. One push per repo.
+
+## D-1351 — Night run 2026-11-27: the founder's answers to REPORT_2026-11-26, the queue, and "no book names anywhere"
+
+**Status:** Accepted (2026-11-25 ~11:15 UTC, Umer, the night-run brief). Run report: morning-report-2026-11-27.
+
+- **Fingerprint:** 3b39c51338ef1687 at the start, not 197e46191b36e443. The read-only check: only Real bid A changed
+  since the 11-26 close-out (08:24 UTC): one project visit, one work session (10:36:30–10:40:52 UTC) and one
+  "Pricing rule changed" record (10:36:54), all by the founder's own account; no builder or exec in that span. The
+  founder's own work: adopted as the baseline.
+- **Q17 = NO.** The open-shop method stays as it is: the stored national table and the location factor F unchanged
+  (no BLS ratio in the blend's national leg).
+- **Q16 = NO (not now).** No more metros loaded, no nonmetropolitan-area mapping.
+- **No book names anywhere** (tightens D-1058, which kept the cost book's name in internal docs and source): no
+  published cost book's or cost-data publisher's name in code, comments, docs, DECISIONS, specs, commit messages,
+  reports or file names. Say "the cost book" / "the national open-shop table". The terms live in the private
+  `.private/book-denylist.txt` (outside git); the close-out scans with it beside the client denylist and rewords every
+  hit in the current files (git history keeps the old wording; weather station place names in the NOAA station seed
+  are not book names).
+- **Queue (max 2 builders, checkpoint per item):**
+  1. **D-1352 — Q14, Q15:** each machine prices on its own WD line (the Athens dozer on Group 2, not held at its
+     operator's Group 1); a carpenter helper with no helper line takes the "carpenter tender" line where the WD lists
+     one, the journeyman carpenter's line only where it does not. QT rows.
+  2. **D-1353 — Q5, Q4, Q18, Q2:** the rule-change note's cut-off is when that rule reached THAT environment (recorded
+     at migration or deploy, per environment), not a fixed UTC time; the note stays until Dismiss; P10 gets the note
+     like P01 and P05 (on Update rates); the rental line reads "9 days on rent: 1 week + 2 days".
+  3. **D-1354 — Q6:** the work week is settable beside "Work starts" when the project has no rate set.
+  4. **D-1355 — Q9, Q11:** one cold day: a snow day and a freezing day on the same day count once (per month the
+     larger of the two causes); a typed contract weather table applies to earthwork only. Re-run the USACE comparison
+     (Houston 77002, Columbus 43215), untuned.
+  5. **D-1356 — Q19:** the build memory setting in the GitHub Actions build steps.
+- **Questions not in the queue (Q1, Q3, Q7, Q8, Q10, Q12, Q13, Q20):** no change ordered tonight; the code keeps the
+  readings the 11-26 report gave.
+- **Close-out:** as always (merge origin/staging, fold migrations into one, prove, gates, full QT 0 FAIL, client-name
+  and book-name scans, mirror, purge, fingerprint, one push to umer-dev); report in morning-report-2026-11-27, pricing
+  questions first, with NOTE_FOR_ABDULLAH.md (migration ids in order; any data load deploy must run).
+
+## D-1353 — Night run 2026-11-27, item 2: the rule note's cut-off per environment, kept until Dismiss, P10, days on rent on the rental line (D-1351; the founder's Q5, Q4, Q18, Q2)
+
+**The builder's readings, logged before any code (2026-11-25 ~12:10 UTC).** Amends D-1345 (the cut-off and the
+"once"); the rest of D-1345 and D-1350's wages note stand.
+- **Q5, the cut-off is when the rule reached THIS environment.** A new api table `pricing_rule_arrival` (not
+  workspace-scoped: one row per rule key per database): `rule_key` (primary key), `arrived_at`, `source`
+  ("migration" or "api start"). It is filled two ways, both "insert, keep the first": (1) the api, at each start, records
+  every key in `rule_notes.KNOWN` that has no row yet, at that moment ("api start"); a future rule needs nothing but its
+  key in `KNOWN` (and its row in the app's `RULE_CHANGES`): its arrival is the first start of an api that knows it, which
+  is its deploy. (2) The migration that ships the table (revision d1353e5a9b71, on d1347c2e9f04) records the two rules
+  that exist today ("migration"), at the moment it runs, unless the operator names their arrival with
+  `alembic -x rule_arrivals=<key>=<ISO UTC>,... upgrade head`. On staging and production (neither has these rules: the
+  rental billing and wage rules 7 commits are on umer-dev only) the migration runs at the deploy that brings them, so
+  "now" is their arrival there and nothing is typed. **On the bench** they arrived before the table existed, so the
+  migration is run with their true bench times: rental billing **2026-11-24 13:52:00 UTC** (D-1336's first app save,
+  `periods.ts`, 13:52–13:53:50; the value D-1345 hard-coded as `since`, so no project's owed state moves) and wages
+  **2026-11-25 05:41:42 UTC** (D-1350's last api save, `service.py`, that put wage rules 7 live: the api answered again at
+  05:41:42). The api's `GET .../estimate/rule-note` answers `arrivals` {key: arrived_at}; the app's `changesOwed` reads
+  the arrival there in place of the hard-coded `since` (removed from `RULE_CHANGES`). A rule with no arrival row is
+  owed nowhere (fail safe: no note rather than a wrong one). The wages note keeps its own test (owed when the current set
+  moved to rules 7 from an older set with the same inputs, D-1350): an older-rules set predates the rules' arrival by
+  construction, so its arrival is recorded but not read.
+- **Q4, the note stays until Dismiss.** `estimate_rule_note` gains `dismissed_at` and `dismissed_by_id` (who and when,
+  per project and rule; the same migration). Needs attention lists every record of the project with |delta| >= $0.005
+  and no dismissal, at every open, from the api's records (no longer only the open that recorded it). Dismiss calls
+  `POST .../estimate/rule-note/{key}/dismiss` (the pricing capability, like the record): the first dismissal stands; the
+  note is then gone for everyone on that project. The toast still fires once, at the open that records the amount. A
+  viewer (no pricing) sees no note, as before.
+- **Q18, P10 gets the wages note.** Read only: P10's current set (192, rules null) has the same inputs as P01's (109):
+  ZIP 10005, county 36061, commercial, open shop, burdened, national average, no WD or agreement. "Update rates" saves a
+  new set from the old set's own inputs (`recalc._inputs`), so the D-1350 test (`SAME_INPUTS`) holds for P10 as it did for
+  the P01 copy in D-1350's smoke (−$8.47); 198 of its 203 crew rows follow the wage set; it was first priced 2026-10-13.
+  No code change is needed for P10; the smoke re-proves the path on a copy of P01 (P10 is not a copy source). P10 is not
+  written.
+- **Q2, the rental line:** "9 days on rent: 1 week + 2 days" (days on rent, then the cover; "1 day on rent" singular).
+  A new `periods.ts:rentLabel` used wherever a priced rental shows its cover (the estimate line, the cost component's
+  summary, the equipment dialog, the picker). `coverLabel` stays as it is (the exports' "cover" column and the QT read
+  it). The D-1346 week note drops its repeated days on rent: " · 6-day work week".
+- **The words** stay D-1345's, no D-number: "Pricing rule changed (<rule>, <date>): this estimate changed by $X".
+- **QT rows** (`equipment-cases.mjs` and its fx-suite copy): owed by this environment's arrival (a later arrival owes a
+  project the bench does not), no arrival row owes nothing, the record shown until dismissed, $0 never shown, the rent
+  label words.
+
+## D-1352 — Night run 2026-11-27, item 1: each machine on its own WD line, a helper on its tender line (D-1351; the founder's Q14, Q15)
+
+**Readings (logged before any code, 2026-11-25 ~11:35 UTC).**
+- **Wage rules 8.** `WAGE_RULES` 7 -> 8, the D-1350 pattern: every change below is gated on `rules >= 8` in the code path,
+  so a recalculation of a saved rules-7 (or older) set still prices as before; only a new Calculate or "Update rates"
+  moves a set to 8. The source's last line reads "Priced by wage rules 8 (Nov 2026)." on a rules-8 rate (a rules-7 set
+  keeps "7"). The code shows no better reason to do it otherwise: the class-level hold and the helper's candidates
+  both sit behind the rules number already.
+- **Q14, each machine on its own WD line.** D-1089 fix 2's hold ("a machine, truck type or laborer group is never under
+  its class level", `rates._one_rate`) is lifted, from rules 8, for a subtype the WD prices on its own line (the
+  subtype's group line, `_groups`): it prices on that line even under the craft's level. Read: the hold covered
+  machines, truck types and laborer groups as one rule, and the founder's reason (the WD's line for that work) is the
+  same for all three, so all three take their own line; the founder may narrow it to machines (question). Kept: the
+  hold where the subtype has no line of its own (it prices on its craft's line with its own open-shop level and
+  premium), on open shop (no WD line prices it), and the crane as the Crane Operator craft's rate (one rate per craft,
+  D-1089 fix 6). D-1350 B2 still holds: never under the subtype's own open-shop base. A rate that would have been held
+  says "Under the class level $X: priced on its own WD line." Athens 45778 (OH20260001 mod 5): the dozer, loader
+  (endloader), motor grader (power grader) and scraper on ENGI0018-004 Group 2, 44.02 + 16.41 = 60.43 payable (rules
+  7: held at Group 1, 60.55).
+- **Q15, a helper on its tender line.** Verified: rules 7 already pays the helper's own class where the WD lists it
+  (`_helper_candidates`: `helper_lines` first, the journeyman's own line only after), and the journeyman's line only
+  where it does not; Athens' carpenter helper is on LABO0265-008 Group 1 ("carpenter tender"), 35.52 + 14.45. Two gaps,
+  fixed from rules 8: (a) the tender line was labelled "Helper not on WD: paid as journeyman" (the $ right, the words
+  wrong): on its own class line a helper reads "Wage determination", its breakdown "The helper's own class on the WD:
+  paid at that line."; the helper label stays for the journeyman's line. (b) The generalisation: rules 7 knew
+  "<trade>er tender/helper" for the carpenter, bricklayer and plasterer and the shared "mason tender", read in WD
+  order, so a plasterer helper took a "mason tender" listed before its own line and never read "PLASTER TENDER" (the
+  spelling on NY20260050 and TX20260067). Rules 8: each helper's own trade's tender or helper line first (plaster or
+  plasterer; carpenter; bricklayer; electrician; plumber, pipefitter or pipe trades; tile or tile setter), then the
+  shared mason tender (bricklayer and plasterer helpers, the tile finisher), then the journeyman's line. The electrician,
+  pipe trades and tile helpers gain a "<trade> tender" line where a WD lists one (none of the 25 cached WDs does).
+- **The wages note** is unchanged: it fires on a move from rules < 7 to >= 7, so a set moved from 6 to 8 is owed it,
+  and a move from 7 to 8 is not (no "wages 8" key: only prevailing and union sets move, no founder set is either).
+- **Founder data:** every founder current set is open shop (P01, P05, P10 null; P08, Real bid A, Real bid B rules 6);
+  rules 8 changes nothing on open shop, so Update rates would move them exactly as D-1350 reported. No migration.
+- **QT rows** in a new drive `drives/qt-wages-d1352.py`, by hand.
+
+### D-1353, built and proved (2026-11-25 ~14:30 UTC)
+- **Built:** api 35d2760 (migration **d1353e5a9b71** on d1347c2e9f04, run on the bench 11:45:58–11:46:26 with
+  `-x rule_arrivals=rental_billing=2026-11-24T13:52:00Z,wages=2026-11-25T05:41:42Z`; digest 3b39c51338ef1687 before and
+  after), app d82550d, infra 65e6c6b (7 QT rows, equipment 170 → 177). Full QT 14:11:20–14:29:22 exit 0, 0 FAIL.
+- **Smoke PASS** on a P01 copy (fx.rulenote.20261125121409, purged 12:23:52): the wages note −$8.47 after Update rates,
+  kept after a reload, gone after Dismiss and the next reload; the rental line "10 days on rent: 2 weeks".
+- **Founder:** nothing written; the bench cut-off equals the old one, so P10's rental note stays −$6,396.64 and P01/P10
+  get −$8.47 on Update rates. Report: `morning-report-2026-11-27/d1353/SECTION.md`.
+
+## D-1354 — Night run 2026-11-27, item 3: the work week beside "Work starts" when the project has no rate set (D-1351; the founder's Q6)
+
+**The builder's readings, logged before any code (2026-11-25 ~14:40 UTC).** Amends D-1346's "no rate set: the week is 5";
+the rest of D-1346 stands.
+- **Where it is stored.** A new nullable column `project_weather.work_days_per_week` (smallint, check `IN (5, 6, 7)`),
+  beside `work_start` on the row the Weather settings already save through the api (`PUT .../weather`, the estimating
+  permission). Null: never set. Migration on top of the current head, nothing existing changes (every row null).
+- **Valid values: 5, 6 or 7** (the founder's D-1342 Q4 named "5, 6 or 7 days"; a week under 5 days is not a site work
+  week). Anything else, or a non-integer, is a 422 ("The work week is 5, 6 or 7 days."). Null clears it (back to 5).
+  The rate set's own field keeps its wider 1–7 (it is an overtime setting first, D-961); not changed here.
+- **Which week rules (`weather/service.py:work_week`, one pure function):** the current rate set's `days_per_week` when
+  the project has one; else the project's own week (this field); else 5. The weather state answers the effective
+  `work_days_per_week` as before (so pricing, which already reads it, needs no change), plus `work_week_source`
+  ("rate_set" | "project" | "default") and `project_work_days_per_week` (the stored value, or null).
+- **With a rate set, the field is refused, not stored:** a PUT carrying `work_days_per_week` on a project that has a
+  current rate set is a 422 ("This project's rate set sets its work week: change it in the Wage calculator ›
+  Overtime, days a week."). A value already stored stays (it is read again only if the project has no rate set).
+- **The first rate set starts from the project's week.** A project's first saved rate set (no current set before it)
+  takes `days_per_week` from the project's own week (else 5), so saving rates never silently drops a project from 6 days
+  back to 5. A later set still carries the previous set's value (D-961, unchanged).
+- **The UI (Weather settings, beside "Work starts"):** "Work week" as a select (5 days Mon–Fri, 6 days Mon–Sat,
+  7 days) when there is no rate set and the person may price; with a rate set it reads "N days a week, from the rate
+  set (Wage calculator › Overtime, days a week)" read only. A viewer sees the week as text only. The panel's line names
+  where the week came from. Saving it reloads the weather and the bundle, so days on rent and the weather's weekday share
+  move at once, as D-1346's days a week does.
+- **Founder data:** no founder project has the field (the column is new and null), so no founder $ moves; projects
+  with a rate set (12 current sets, all 5 days) are unaffected by construction.
+- **QT rows:** a new read-only drive `drives/qt-workweek-d1354.py` (the api's resolution, its validation and the
+  first set's seed, by hand), and `browser/lib/weather-cases.mjs` rows: a rental on a project-set 6-day week prices as
+  the rate set's 6-day week (23 days, $7,950), and the panel's week words by source.
+
+**D-1352, built and proved (2026-11-25 UTC).** api 1821c16, infra 64f2131 (27 QT rows in `drives/qt-wages-d1352.py`).
+No migration. Two readings refined while building: the tile finisher keeps its rules-7 helper list (no shared mason
+tender); a tender item that opens a group line written without a colon ("LABORER GROUP 4- ELECTRICIAN TENDER") is read
+from rules 8. Full QT 14:52:22–15:10:50 exit 0, 0 FAIL. Smoke on a throwaway Athens 45778 prevailing project: Dozer
+$60.43 on Group 2, Carpenter Helper $49.97 "Wage determination" on the carpenter tender line. Founder sets: rules 7 and
+8 price every founder set's Update rates identically (all open shop).
+
+## D-1355 — Night run 2026-11-27, item 4: one cold day (snow and freezing count once), a contract table for earthwork only (D-1351; the founder's Q9, Q11)
+
+**The builder's readings, logged before any code (2026-11-25 ~15:20 UTC).** Amends D-1347 (a) the combining rule and
+(c) "every crew kind"; the rest of D-1347 (the freezing element, the clay drying day, the table's storage and checks)
+stands.
+- **Where the math lives: one engine.** The lost-day math is only in the app's pure module
+  `src/lib/takeoff/earthwork/water/weather.ts` (`lostShare`, `activityLostDays`); the api stores the normals and the
+  table and computes nothing from them. So the change is app-only (and the QT rows); no api code, no migration.
+- **Q9, one cold day.** Earthwork's month share = 1 − (1 − rain)(1 − cold), cold = max(snow, freezing), snow being
+  earthwork's snow share as today (the snow day and its clearing day, (S + S × (1 − S/days)) ÷ days) and freezing the
+  days with a maximum ≤ 32 °F ÷ days. Read: "the larger of the two causes" per month, each cause as earthwork already
+  measures it. Rain (and clay's drying day, R + 2 × D100) stays independent of the cold, as built. Pipe and flatwork have
+  no freezing part, so for them cold = snow and nothing moves. `lostShare` still answers the parts (rain, snow, freeze)
+  and adds `cold`.
+- **Q11, the table drives earthwork only.** A typed contract table replaces the normals for the earthwork rule only;
+  pipe and flatwork crews read the station's normals as if no table were typed (and add no lost days where the project
+  has no station). `activityLostDays` reads `opts.contract` only when the rule is earthwork; the app's `spreadWeather`
+  and the panel's per-20 figures pass the table for earthwork only.
+- **Wording.** The Estimating weather row: "Contract weather table (USACE) used for earthwork". Setup: "Weather:
+  contract weather table (USACE) for earthwork · other crews: <station>, N mi" (or "· other crews: no station"). The
+  panel: "Contract weather table (USACE) used for earthwork in place of the normals: Jan 11 · …; pipe, site, flatwork and
+  paving crews read the normals." The machine note stays "(…, contract weather table (USACE))" (earthwork machines only
+  carry it now). Needs attention with a table: the station lines come back for the other crews ("… Pipe and flatwork lost
+  days are not added; the contract table covers earthwork.").
+- **"Pricing rule changed" note: none.** Read only 15:15 UTC: one `project_weather` row on the bench (Real bid A, not
+  applied, no table), so no founder total moves; no "weather" key in `RULE_CHANGES` / `KNOWN`. An applied non-founder
+  project moves at its next price.
+- **USACE comparison re-run (calendar days a year, earthwork, untuned):** Houston 77002 83.9 → 83.9 (101.6 → 101.6 on
+  clay; HOUSTON-PORT has no freezing day); Columbus 43215 100.1 → 90.1 (108.0 → 98.2 on clay) against USACE 100.
+- **QT rows the rule changes (D-1347's):** `wx-freeze-ew-jan` (11.6278 → 9.4361), `wx-freeze-no-double` (0.943067 →
+  0.875935), `wx-contract-year-pipe` (the table → the normals' pipe year), `wx-contract-no-normals` (now an earthwork row;
+  a pipe row with no normals adds nothing), `wx-contract-machine` (the pipe machine → the normals; an earthwork machine
+  carries the table), `wx-contract-label` (the new words). New rows: the cold day, flatwork with a table, the Needs
+  attention line.
+
+### D-1354, built and proved (2026-11-25 ~15:45 UTC)
+- **Built:** api b785766 (migration **d1354a6c2e81** on d1353e5a9b71, run on the bench 14:35:37–14:35:57; digest
+  3b39c51338ef1687 before and after) and 569a7a2 (the Overtime row reads the project's week before its first set), app
+  beabd08. infra (drive `qt-workweek-d1354.py`, its `quantity-table.sh` line, 6 rows in `weather-cases.mjs`) on disk,
+  not committed: the full QT 15:25:37–15:42:12 had 8 FAIL, all D-1355's rows reacting to D-1355's app saves made during
+  the run; my 19 + 6 rows were right. Commit it after a clean run.
+- **Smoke PASS** (throwaway fx.workweek.20261125145620, project d187d476, purged 15:09:35): no rate set, the line 9 days
+  on rent → week 6 beside Work starts → 8 days on rent; 4/8/6.5 refused (422); "Save rates to project" made the first
+  set at 6; the Weather row then read only, a PUT refused with the rate set's message.
+- **Founder:** no project has the field; every current set is 5 days; no founder $ moves.
+
+## D-1356 — Night run 2026-11-27, item 5: the build memory setting in the GitHub Actions build steps (D-1351; the founder's Q19)
+
+**Status:** Accepted (D-1351 brief, Q19). Built by the main session.
+
+- The app's two deploy workflows (`.github/workflows/deploy-staging.yml`, `deploy-production.yml`) build on the GitHub
+  runner with `npm run build`, not through the Dockerfile, so D-1349's `NODE_OPTIONS=--max-old-space-size=3072` did not
+  reach them. Each "Build" step now sets the same `NODE_OPTIONS` in its own `env:` (the step only, not the job, so
+  `npm ci` and the bundle checks run as before). The api's staging workflow builds no frontend: unchanged.
+- Proof: both files parse as YAML, and the step's env reads the same value as the Dockerfile; the app gates run. A
+  workflow cannot be run from the bench; the next staging deploy is its first real run (named in NOTE_FOR_ABDULLAH).
+
+### D-1355, built and proved (2026-11-25 ~16:15 UTC)
+- **Built:** app 2a9c649 (`lostShare`: cold = max(snow, freezing), share = 1 − (1 − rain)(1 − cold); `contractFor`: the
+  table for earthwork only; the panel, Setup, row and Needs attention words); infra da1d678 (QT rows; weather 78 → 90 with
+  D-1354's 6) and c11a73c (D-1354's own QT files, committed for it after the full QT). No api change, no migration.
+- **Full QT** 15:55:36–16:11:53 exit 0, 0 FAIL. **Smoke PASS** (fx.weather.20261125155621, purged 16:00:09): a Columbus
+  43215 project, earthwork 6.6 per 20 (7.6 under D-1347's rule); the Columbus USACE table typed: earthwork 7.5, pipe 2.3
+  and flatwork 6.8 unchanged; Setup "Weather: contract weather table (USACE) for earthwork · other crews: …".
+- **USACE re-run:** Houston 83.9 / 101.6 on clay (unchanged); Columbus 100.1 → 90.1, 108.0 → 98.2 on clay (USACE 100).
+- **Founder:** $0 (Real bid A's weather not applied); no rule note. Digest 3b39c51338ef1687 at 16:13 UTC.
+
+**Close-out of the night run 2026-11-27 (D-1351), 16:27–17:3x UTC.** Nothing came in from origin/umer-dev or
+origin/staging (no merge). The two migrations folded into one revision, **`d1354f7b3c20`** (revises `d1347c2e9f04`;
+D-1353's `pricing_rule_arrival` with its `-x rule_arrivals=` option and `estimate_rule_note.dismissed_at/by`, then
+D-1354's `project_weather.work_days_per_week`), api 9526f61: proved on a scratch database (from empty: up equals the bench
+schema but for the 31 known CHECK prints; down equals d1347c2e9f04; up again equal), then the bench switched over
+16:35:27–16:36:44 (down on the two files, up on the folded one with the bench arrivals rental_billing 2026-11-24
+13:52:00Z and wages 2026-11-25 05:41:42Z: both kept exactly, schema identical, one head; nothing else lost: 0
+dismissals, 0 work weeks set). Gates: api ruff, format, mypy, `alembic check`; app lint, typecheck, build run fully and
+chained (D-1354 had piped its own through `tail`). Full QT 17:00:03–17:15:37 exit 0, 0 FAIL. No book names: 30 hits
+over the repos, workspace files and both nights' reports; the real ones reworded in the current files (api a48e85d:
+`wagecalc/market.py` docstring and the catalog converter's publisher patterns as `\xHH` escapes, each pattern
+unchanged; infra c77ef59: a QT comment; WAGE_PLAN.md twice; one line of this file); the rest are place names in the
+station, ZIP and county data and two incidental substrings (a domain, two integrity hashes). Client names 0. FEATURES
+(no Live moves), MANAGER (In Progress rows D-1352 to D-1356), SINCE_ARCHIVE updated; mirror refreshed. Throwaways:
+none left. Digest 3b39c51338ef1687 at start and end. One push per repo.

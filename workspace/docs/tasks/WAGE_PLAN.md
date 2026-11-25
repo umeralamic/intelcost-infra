@@ -82,7 +82,7 @@ Burdened = that base through the burden engine, not below residential `hourly_ra
 **Migration:** data (OEWS, ECI, minimum wage); no schema change for the table choice. **Risks:** every open-shop
 commercial project's labor drops on "Update rates" (W11 makes it explicit).
 
-**Harris County TX, open shop, private commercial (F = +17.771 %), bid date 2026-11-06.** National Estimator
+**Harris County TX, open shop, private commercial (F = +17.771 %), bid date 2026-11-06.** The national open-shop table
 escalated +2.61 % (Dec 2025 → bid date), OEWS May 2025 escalated +4.72 %. Burden as today's residential ratio
 (hourly ÷ base, national WC until W8).
 
@@ -233,7 +233,7 @@ from today's two values.
 ### W12 Escalation, no flat uplifts
 
 **Change.** Every wage source is escalated with ECI construction wages and salaries from its own effective date to
-the bid date (National Estimator from 2026-01-01; OEWS from its survey month; a WD is not escalated, it is the law
+the bid date (the national open-shop table from 2026-01-01; OEWS from its survey month; a WD is not escalated, it is the law
 on its date). Between published quarters the index is interpolated; past the latest quarter it is carried at the
 latest 12-month change. Optional per-project "Escalate labor to construction midpoint" (months to midpoint, %/yr,
 default off). The breakdown shows the % and both dates. No flat % on any table.
