@@ -244,7 +244,35 @@ export const WEATHER_CASES = [
   { id: "wk-note-rate-set", kind: "wk-note", weather: { work_days_per_week: 6, work_week_source: "rate_set" }, expect: { note: "6-day work week (the rate set's: Wage calculator › Overtime, days a week)" } },
   { id: "wk-note-project", kind: "wk-note", weather: { work_days_per_week: 7, work_week_source: "project", project_work_days_per_week: 7 }, expect: { note: "7-day work week (set beside Work starts)" } },
   { id: "wk-note-default", kind: "wk-note", weather: { work_days_per_week: 5, work_week_source: "default" }, expect: { note: "5-day work week (the default: set it beside Work starts)" } },
-  { id: "wk-note-weeks", kind: "wk-note", weather: null, expect: { note: "5-day work week (the default: set it beside Work starts)", weeks: [5, 6, 7] } },
+  // D-1362 (the founder's Q7): 4 to 7 days offered beside "Work starts" (D-1354 offered 5, 6, 7).
+  { id: "wk-note-weeks", kind: "wk-note", weather: null, expect: { note: "5-day work week (the default: set it beside Work starts)", weeks: [4, 5, 6, 7] } },
+  // --- D-1362 (the founder's Q7): a 4-day week (Monday to Thursday) and the 7 bound ---------------------------------------
+  // wk-solve-4day-7: 7 work days from a Monday (no start): Mon–Thu (4), Fri, Sat, Sun between, Mon–Wed (7th): 10 days on
+  //   rent. 10 days $10,400; 1 week + 3 days $6,047; 2 weeks $5,854; one 4-week $7,950 → 2 weeks $5,854; 56 h against
+  //   80 h, no overtime.
+  { id: "wk-solve-4day-7", kind: "wk-solve", rates: [1040, 2927, 7950], days: 7, hours: 56, week: 4, expect: { cost: 5854, periodCost: 5854, billedDays: 10, allowanceHours: 80, overtimeHours: 0, workWeek: 4, startAssumed: true, label: "2 weeks" } },
+  // wk-solve-4day-thursday: from Thursday 2027-01-07 (a work day), 2 work days: Thu, Fri–Sun between, Mon: 5 days on
+  //   rent; 5 days $5,200 against 1 week $2,927 → $2,927.
+  { id: "wk-solve-4day-thursday", kind: "wk-solve", rates: [1040, 2927, 7950], days: 2, hours: 16, week: 4, start: "2027-01-07", expect: { cost: 2927, billedDays: 5, overtimeHours: 0, startAssumed: false, label: "1 week" } },
+  // wk-solve-4day-friday: from Friday 2027-01-08, not a work day on a 4-day week: picked up the Monday; 3 work days = 3
+  //   days on rent; 3 days $3,120 against 1 week $2,927 → $2,927.
+  { id: "wk-solve-4day-friday", kind: "wk-solve", rates: [1040, 2927, 7950], days: 3, hours: 24, week: 4, start: "2027-01-08", expect: { cost: 2927, billedDays: 3, overtimeHours: 0, startAssumed: false, label: "1 week" } },
+  // wk-solve-4day-20: 20 work days from a Monday = 5 weeks Mon–Thu, off rent the 5th Thursday: 4 × 7 + 4 = 32 days on
+  //   rent. One 4-week + 4 days $12,110; one 4-week + 1 week $10,877; 5 weeks $14,635; 2 × 4-week $15,900 → $10,877;
+  //   allowance 160 + 40 = 200 h: 160 h no overtime, and a 4 × 10 h crew (200 h) none either.
+  { id: "wk-solve-4day-20", kind: "wk-solve", rates: [1040, 2927, 7950], days: 20, hours: 160, week: 4, expect: { cost: 10877, billedDays: 32, allowanceHours: 200, overtimeHours: 0, label: "one 4-week + 1 week" } },
+  { id: "wk-solve-4day-20-10h", kind: "wk-solve", rates: [1040, 2927, 7950], days: 20, hours: 200, week: 4, expect: { cost: 10877, billedDays: 32, allowanceHours: 200, overtimeHours: 0, label: "one 4-week + 1 week" } },
+  // wk-solve-8-reads-5: the 7 bound: a week of 8 (never stored: the api and the check refuse it) reads the default 5
+  //   (wk-solve-default-5: 9 days on rent, $5,007).
+  { id: "wk-solve-8-reads-5", kind: "wk-solve", rates: [1040, 2927, 7950], days: 7, hours: 56, week: 8, expect: { cost: 5007, billedDays: 9, workWeek: 5, label: "1 week + 2 days" } },
+  // wx-june-ew-month-4day: IAH June earthwork on a 4-day week: 42.64/7 × 4/5 = 4.8731 (5/7: 6.0914); a week of 8 reads 5/7.
+  { id: "wx-june-ew-month-4day", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "earthwork", week: 4, expect: { lost: (42.64 * 4) / 35 } },
+  { id: "wx-june-ew-month-8-reads-5", kind: "wx-month", normals: "IAH_WX", month: 6, rule: "earthwork", week: 8, expect: { lost: 42.64 / 7 } },
+  // wk-project-4day-rental: the line's own rental (20 work days, 160 h, pipe, applied) on the project's own 4-day week:
+  //   32 days on rent, one 4-week + 1 week $10,877 (wk-solve-4day-20); the year's lost days unchanged (the share does
+  //   not move with the week, D-1346).
+  { id: "wk-project-4day-rental", kind: "wx-machine", mode: "rental", activity: 12, applied: true, workDays: 20, hours: 160, extra: { work_days_per_week: 4, work_week_source: "project", project_work_days_per_week: 4 }, expect: { rent: 10877, days: 32, lost: (20 * (PIPE_YEAR_SNOW / WEEKDAYS)) / (1 - PIPE_YEAR_SNOW / WEEKDAYS) } },
+  { id: "wk-note-project-4", kind: "wk-note", weather: { work_days_per_week: 4, work_week_source: "project", project_work_days_per_week: 4 }, expect: { note: "4-day work week (set beside Work starts)" } },
   // --- D-1347 (the founder's D-1342 Q6): earthwork's freezing days, a clay drying day, a contract's USACE table ---------
   // wx-freeze-ew-jan: Carpenter, January, earthwork, with its 9.5 days at or below 32 °F all day: rain 0.172581 and snow
   //   0.172487 (wx-snow-gallia-ew), freezing 9.5/31 = 0.306452. D-1355 (the founder's Q9, one cold day): cold = max(snow,

@@ -13,7 +13,8 @@ Which week rules (`weather/service.py:work_week`), worked by hand:
     no rate set, never set                     -> 5, "default"   (as before D-1354)
     no rate set, a stored 3 (refused by the check; read defensively) -> 5, "default"
 What the save refuses (`work_week_error`, a 422):
-    5, 6, 7 and null (clears) without a rate set -> accepted; 4, 8, 0 -> "The work week is 5, 6 or 7 days.";
+    5, 6, 7 and null (clears) without a rate set -> accepted; 8, 0 -> "The work week is 4, 5, 6 or 7 days.";
+    (D-1362, the founder's Q7: 4 is accepted since; its rows are in qt-workweek-d1362.py);
     anything while a rate set rules (even 6)     -> the rate set's message.
 The first rate set's days a week (`first_set_days`):
     no set before, the project's own 6 -> 6 (saving rates keeps the week); no set before, never set -> 5;
@@ -55,7 +56,7 @@ def main() -> int:
         ("d1354-save-6", (6, False), None),
         ("d1354-save-7", (7, False), None),
         ("d1354-save-null-clears", (None, False), None),
-        ("d1354-save-4-refused", (4, False), WORK_WEEK_ERROR),
+        ("d1354-save-4-accepted-since-d1362", (4, False), None),
         ("d1354-save-8-refused", (8, False), WORK_WEEK_ERROR),
         ("d1354-save-0-refused", (0, False), WORK_WEEK_ERROR),
         ("d1354-save-with-rate-set-refused", (6, True), WORK_WEEK_RATE_SET),
@@ -69,7 +70,7 @@ def main() -> int:
     ):
         check(wrong, rid, first_set_days(*args), want_days)
         rows += 1
-    check(wrong, "d1354-error-words", WORK_WEEK_ERROR, "The work week is 5, 6 or 7 days.")
+    check(wrong, "d1354-error-words", WORK_WEEK_ERROR, "The work week is 4, 5, 6 or 7 days.")
     rows += 1
 
     for w in wrong:

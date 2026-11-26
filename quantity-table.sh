@@ -177,6 +177,9 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1361.py" <
 # rate set's, else the project's, else 5), what a save refuses (not 5, 6 or 7; any while a rate set rules) and the
 # first rate set's days a week; each by hand, pure (no database).
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-workweek-d1354.py" </dev/null || { echo "FAIL  work week (above)"; exit 1; }
+# D-1362 (the founder's Q7): a 4 to 7 day week beside "Work starts" and on the rate set's own days a week (4 and 7
+# accepted, 3 and 8 refused on both), which week rules, a saved set read as stored, the model's check; by hand, pure.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-workweek-d1362.py" </dev/null || { echo "FAIL  work week 4 to 7 (above)"; exit 1; }
 # D-1360 (the founder's Q3/Q6): which wage note a rate set's move owes, wage rules 8's own key among them (one note per
 # move, re-saves skipped, other inputs owe nothing; Real bid A's chain); each by hand, pure (no database).
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1360.py" </dev/null || { echo "FAIL  rule notes (above)"; exit 1; }
