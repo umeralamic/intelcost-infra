@@ -37541,3 +37541,30 @@ whose builder could not run it). Client and book names 0 in every changed file, 
 folder; the private patterns file is in no repo and not in the mirror. FEATURES (no Live moves), MANAGER (In Progress
 rows D-1359 to D-1364), SINCE_ARCHIVE updated; mirror refreshed. Throwaways: none left (0 fx accounts or workspaces
 made tonight, 0 BENCH DUPs). Digest 49f90aa6775fddaa at start and end. One push per repo.
+
+## D-1365 — The founder's answers to REPORT_2026-11-28 (for the next run)
+
+Given 2026-11-26 after the 11-28 close-out. Binding for the next run; queue in
+intelcost-infra/morning-report-2026-11-28/NEXT-RUN.md.
+
+- **Q1 (D-1359 Q1): yes.** A craft's own row (Equipment Operator, Truck Driver, Laborer) drops a survey line that names
+  one machine, and prices on BLS.
+- **Q2/Q3 (D-1359 Q2, Q3): the premium rule.** The excavator premium is dropped ONLY when the machine's own survey line
+  is actually used (it sets the rate or competes with BLS). If its own line is skipped (older than 10 years, or a union
+  line), it counts as no line and the premium stays. Fix the Florida excavators (33131, 33025, 33414) and Yuma 85364's
+  accordingly; explain why Pinal and Yuma differed. Utah's shared backhoe/excavator/trackhoe survey line stays (no
+  premium there). Proof: the 16-ZIP before/after table.
+- **Q4 (D-1360 Q1): one combined note, yes.** **Q5 (D-1360 Q2): acceptable.**
+- **Q6 (D-1364 Q1): an owed note is kept through any later rule move** (Update rates included) until it has been
+  shown; no order dependence. QT row: Update rates before an Estimating open still shows Real bid A's +$118.26.
+- **Q7 (D-1364 Q2): yes,** a move in a machine's own rate counts in the note.
+- **Q8 (D-1364 Q3): yes,** throwaway copies of P08, P10 and Real bid B; exact amounts.
+- **Q9 (D-1361 Q1): keep the plus on both bases.** **Q10 (D-1361 Q2): OK.**
+- **Q11 (D-1362 Q1): old sets keep their stored week** (none exist). **Q12 (D-1362 Q2): OK.**
+- **Q13 (D-1363): no history rewrite.**
+- **Enforce, don't just state:**
+  (a) the quantity table script itself takes the app lock, and the save helper (the founder gate hook) refuses any app
+  or api save while that lock is held;
+  (b) every gate runs with pipefail (or its exit code read), and the commit step refuses if any gate's exit code is not 0.
+  Prove both with a deliberate attempt (a save while the QT holds the lock is refused; a commit after a failing gate is
+  refused).
