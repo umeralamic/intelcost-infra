@@ -81,7 +81,8 @@ async def main() -> int:
     ref, market = RefData(), load_market()
     wrong: list[str] = []
     rows = 0
-    check(wrong, "d1368-rules", (WAGE_RULES, PREMIUM_RULES), (10, 10))
+    # Rules 10's own number (D-1374 moved WAGE_RULES on to 11; every row below names its rules).
+    check(wrong, "d1368-rules", (WAGE_RULES >= 10, PREMIUM_RULES), (True, 10))
     rows += 1
 
     def sl(rate_id: str, dated: date, title: str, base: float) -> w14.SurveyLine:

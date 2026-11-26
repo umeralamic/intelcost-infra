@@ -228,6 +228,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1359.py" <
 # machine's premium is dropped only when its own survey line is used (the Yuma and Florida split pairs are no split);
 # the wages_10 note key; by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1368.py" </dev/null || { echo "FAIL  wage rules 10 (above)"; exit 1; }
+# D-1374 (wage rules 11): on open shop a craft's own row drops any survey line that names machines, one or several
+# (Utah's shared backhoe/excavator/trackhoe line no longer sets its Equipment Operator; the backhoe and the excavator
+# still read it as their own line, no premium); the split pairs as rules 10; the wages_11 note key; by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1374.py" </dev/null || { echo "FAIL  wage rules 11 (above)"; exit 1; }
 # D-1361 (the founder's Q4): the breakdown's words. A WD fringe reads "Fringe per WD" (the Athens carpenter helper's
 # 14.45, not "Raised to minimum"); "Raised to minimum" only when the base was raised; the parts add to every rate.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1361.py" </dev/null || { echo "FAIL  wage breakdown words (above)"; exit 1; }
