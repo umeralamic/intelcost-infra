@@ -37281,3 +37281,263 @@ none left. Digest 3b39c51338ef1687 at start and end. One push per repo.
 - **Lock rule (standing, every run):** a running quantity table holds the app lock; no app or api save until it
   finishes (D-1355's lock slip made D-1354's run fail).
 - **Report (read only, next run):** the wages-note amount P08, Real bid A and Real bid B would get on Update rates.
+
+## D-1358 — Night run 2026-11-28: the queue from morning-report-2026-11-27/NEXT-RUN.md (D-1357)
+
+**Status:** Accepted (2026-11-25 ~20:45 UTC, Umer, the run brief). Run report: morning-report-2026-11-28.
+
+- Queue, in NEXT-RUN.md's order, one decision per item (max 2 builders, checkpoint per item):
+  - **D-1359 — items 1 and 1b:** the wage matcher (whole-classification match, never a substring inside another
+    machine's name; Athens loader on Group 2 "endloader", scraper on Group 2 "power scraper"; own line for machines,
+    truck types and laborer groups) and open shop's WD lines (a machine reads only its own survey line, a shared
+    classification naming it counts as its own, else BLS; the pipelayer takes the higher of its own recent survey line
+    and BLS). QT rows on the real Athens WD; 16-ZIP before/after for operators and pipelayer; founder $ by label.
+  - **D-1360 — item 2:** wage rules 8 gets its own "Pricing rule changed" note key; the note is dismissed per person.
+  - **D-1361 — item 3:** "Fringe per WD +$X"; "Raised to minimum" only when the base was raised.
+  - **D-1362 — item 4:** 4–7 days for the field beside "Work starts" and the rate set's own week; the field read only
+    once a rate set exists, with a link; the Overtime row refreshes after "Save rates to project".
+  - **D-1363 — item 5:** the converter's publisher and competitor patterns in a private file outside git, loaded at
+    runtime; no `\xHH` strings; the converter refuses to run without the file.
+  - **D-1364 — item 6 (read only):** the wages-note amount P08, Real bid A and Real bid B would get on Update rates.
+- Standing rules as listed in NEXT-RUN.md, including the D-1357 lock rule (a running quantity table holds the app lock)
+  and no book names anywhere. Fingerprint baseline 3b39c51338ef1687.
+- Close-out as always; the push includes infra 29fd9d4.
+
+## D-1360 — Night run 2026-11-28, item 2: wage rules 8 gets its own "Pricing rule changed" note key; the note is dismissed per person (D-1357 Q3/Q6, Q5)
+
+**The builder's readings, logged before any code (2026-11-25 ~21:05 UTC).** Amends D-1350's wages note test and
+D-1353's Dismiss; the rest of D-1345/D-1353 stands.
+- **The key.** `wages_8`, label "wage rules 8" (the words a rules-8 rate already shows: "Priced by wage rules 8 (Nov
+  2026)"), date 2026-11-25, owed like "wages": a rate set moved by Update rates from older rules with the same inputs
+  (D-1350's `SAME_INPUTS`). $X = the Full estimate now less the same with every labour row that follows the wage set at
+  the older set's rate for its craft (D-1350's second pass, unchanged). In `RULE_CHANGES` and the api's `KNOWN`, with a
+  general table of wage keys by rules number (`WAGE_NOTES`: wages 7, wages_8 8), so a rules 9 (D-1359, if it lands) is one
+  row in each.
+- **One note per move, never one per key crossed (no double counting).** A move from rules b to rules c owes ONE note:
+  under the first wage key the set had not had (the lowest rules number N with b < N <= c), its $X the whole move. So a
+  set going 6 -> 8 (or null -> 8) gets the "wages" note (as D-1350/D-1352 said: "a set moved from 6 to 8 is owed it"), its
+  amount covering rules 7 and 8; a set on 7 moving to 8 gets "wage rules 8"; 8 -> 9 would get "wage rules 9". Why the
+  lowest and not the newest: on every founder set (open shop) rules 8 moves $0 (D-1352), so the whole amount of a 6 -> 8
+  move is rules 7's; naming it "wage rules 8" would put the amount on the wrong rule. A split per rule would need the api
+  to price the set again at each older rules number at every open (heavy, and the WD reads behind it): not done. Not
+  covered: a set that went 6 -> 7 and then 7 -> 8 with no Estimating open between owes only the 7 -> 8 note (no founder
+  set is on rules 7; Calculate now saves 8).
+- **The set before the move skips re-saves.** The set "before" is the latest older set that is not a re-save of the
+  current one (same inputs AND same rules): two Update rates in a row no longer erase the owed note (D-1350 compared the
+  current set with the one directly before it). An older set with other inputs ends the walk: nothing owed (the move was
+  the inputs, not the rules). `moved_at` is the first set of the run on the new rules. Read on Real bid A: sets 534
+  (rules 6, 2026-11-12) -> 679 (rules 8, 20:25:50) -> 680 (rules 8, 20:27:59, current), all with the same inputs; 679 and
+  680 have the same 36 rates; 33 crafts moved by 1 to 7 cents from 534. Under D-1350's test Real bid A owed nothing (680
+  vs 679); with this reading it owes the "wages" note (6 -> 8), priced at its next Estimating open by a member who may
+  price. It owes no "wage rules 8" note.
+- **Arrival per environment (D-1353).** The migration records `wages_8` in `pricing_rule_arrival` ("migration") at the
+  moment it runs, or at the time named with `-x rule_arrivals=wages_8=<ISO UTC>` (D-1353's option, its own key list).
+  On the bench: **2026-11-25 11:43:21 UTC**, D-1352's last api save (`service.py`) that put all of rules 8 live (the api
+  log: startup complete 11:43:16-11:43:19, /docs 200 at 11:43:21; `WAGE_RULES = 8` itself went live with `rates.py` at
+  11:42:15). Like "wages", the note is owed by the set's move, not by the arrival: recorded, not read. The migration's
+  insert keeps a row already there (on conflict nothing).
+- **Q5, Dismiss per person.** A new table `estimate_rule_note_dismissal` (note, user, `dismissed_at`; primary key note +
+  user; both cascade). Dismiss writes the caller's row (insert, the first stands); Needs attention lists a note for every
+  member who may price until THAT member dismisses it. The api answers `dismissed_at` per viewer (the caller's own
+  dismissal), so the field keeps its name. The migration carries each existing project-level dismissal to its dismisser
+  (`dismissed_by_id`, `dismissed_at`) and drops the two columns of `estimate_rule_note`; the downgrade puts the earliest
+  dismissal of each note back on the columns. Read at 21:00 UTC: 1 record on the bench (Real bid A rental billing $0),
+  0 dismissals, so nothing is carried today.
+- **Words** unchanged, no D-number: "Pricing rule changed (wage rules 8, Nov 25, 2026): this estimate changed by $X".
+- **The api's answer:** `wages_before` (one set) becomes `wage_moves` {key: {moved_at, rates}} (at most one key).
+- **QT rows:** a pure drive `drives/qt-rulenote-d1360.py` (the key a move owes: 6->8, null->8, 7->8, 8->8, 6->7, a
+  re-save skipped, other inputs end the walk, Real bid A's chain) and rows in `equipment-cases.mjs` (and its fx-suite
+  copy): `wages_8` owed from `wage_moves`, the words, a per-viewer dismissal.
+
+## D-1359 — Night run 2026-11-28, items 1 and 1b: the wage matcher by whole names; open shop reads each machine's own survey line; the pipelayer's own survey line (D-1357 Q1, Q2; NEXT-RUN 1, 1b)
+
+**The builder's readings, logged before any code (2026-11-25 ~21:30 UTC).**
+- **Wage rules 9.** `WAGE_RULES` 8 -> 9, the D-1350/D-1352 pattern: every change below is gated on `rules >= 9` in the
+  code path (`OWN_SURVEY_RULES = 9`), so a saved set keeps its rules (a recalculation prices it as before) and only a new
+  Calculate or "Update rates" moves it to 9; the source's last line reads "Priced by wage rules 9 (Nov 2026)." The code
+  shows no better reason to do it otherwise: the matcher and the open-shop figures both feed saved sets' rates.
+- **Item 1, whole names (D-1357 Q2).** A WD group line's item names a machine only by the machine's whole name. The item
+  (parentheses, a leading "AND", a "GROUP n-" head off) is split into the names it lists ("/", "OR", "AND/OR", "AND",
+  "&", ","; "LOADER, FRONT END" read as "FRONT END LOADER"; a bare word after "/" keeps the words before the previous
+  one, so "BELT TYPE GRADER/LOADER" is a belt type loader). For the earthwork machines (dozer, motor grader, skid steer,
+  backhoe, loader, roller, excavator, scraper) a name matches when it IS the machine's name with only generic words
+  before it (rubber-tired, track, crawler, wheel, hydraulic, power, self-propelled, small, mini, heavy ...; plus each
+  machine's own: front end / end for the loader, motor for the grader, vibratory / asphalt / sheepsfoot for the roller,
+  elevating / pan / twin-engine for the scraper) and only a size, "with ...", a dash or a note after it. So on
+  OH20260001 (Athens) "ENDLOADER" and "POWER SCRAPER" (Group 2) are the loader and the scraper; "ELEVATING GRADER OR
+  EUCLID LOADER", "PRENTICE LOADER", "MULTIPLE SCRAPER" (Group 1), "KOLMAN-TYPE LOADER", "SKIP LOADER", "SUB-GRADER",
+  "ELEVATOR EXCAVATOR", "PILE RIG ... EXCAVATOR", "EIMCO LOADERS AND EIMCO BACKHOES" name none. An item may name several
+  ("BACKHOE/EXCAVATOR/TRACKHOE" is the backhoe's and the excavator's: the shared classification counts as each one's
+  own line). The other subtypes (paver, forklift, off-road truck, grade checker, mechanic, the truck types, the laborer
+  groups) keep their patterns but as whole words outside parentheses ("OILER" is not in "BOILER", "DUMP" not in
+  "DUMPSTERS", "(ASPHALT)" in a laborer's note is not the asphalt raker), the first one found as before; the crane keeps
+  its D-1350 item rule. Read over every family line of the 25 WDs cached on the bench: 46 items change, listed in the
+  report. One loss, accepted: NY's run-on "ASPHALT ROLLER ASPHALT SPREADER OR PAVER" reads as a paver, not a roller.
+  Applied wherever rules 9 reads a WD's subtype lines: prevailing and union (`_groups`), W14's survey and union-coded
+  group lines (`lines_of`), the Heavy/Highway split pairs, and the WD mapping screen.
+- **Item 1, scope (D-1357 Q1).** The own WD line stays for machines, truck types and laborer groups (D-1352, unchanged).
+- **Item 1b (a), open shop: a machine reads only its own survey line.** Today every subtype is its craft's open-shop
+  level (which reads the craft's WD survey line, on Pinal and Yuma "POWER EQUIPMENT OPERATOR: SCRAPER") plus its
+  premium, then held at the craft's rate. Rules 9, per subtype: (1) its own survey line (the subtype's group line in
+  the WD's survey lines, by item 1's names), when recent (at most ten years at the bid): the local figure is the higher
+  of that line (escalated) and BLS, then the company minimum and the national blend, exactly as a craft; no premium on
+  top (the line is the machine's own). (2) Else its craft's level, read WITHOUT the craft's survey line when that line
+  names other machines and not this one (another machine's line), i.e. BLS; plus its premium as today (the split pair or
+  the company default, excavator +21.5 %), never under that level. A craft line naming no machine (a general line) still
+  sets the level. (3) The open-shop hold at the craft's rate (`_one_rate`) no longer applies to a subtype on rules 9 (its
+  own figure stands, said "Under the class level $X: priced on its own figure."), except where the craft's rate is the
+  user's own entered rate (as D-1352 kept it) and the crane (the Crane Operator craft's rate, one rate per craft). The
+  craft's own row (Equipment Operator, Truck Driver, Laborer) is unchanged: it still reads the craft's line (question).
+  Prevailing and union read these open-shop subtype figures as their floor (D-1350 B2), so they follow.
+- **Item 1b (b), the pipelayer.** Rules 9: the pipelayer's local figure is the higher of its own recent WD survey line
+  (the Laborer's pipelayer group line, escalated) and BLS 47-2151 (Pipelayers), then the minimum and the blend; still
+  never under the laborer's level (D-1090's open-shop hold, kept: a floor, not another line read as its own), and on
+  prevailing still never under its own open-shop figure (D-1090). Today (rules 5-8) `soc` set skips the survey line.
+- **The note.** If D-1360 has landed (its `WAGE_NOTES` table), rules 9 gets its key the same way: `wages_9`, label "wage
+  rules 9", in the api's `KNOWN`/`WAGE_NOTES` and the app's `RULE_CHANGES`; its arrival recorded per environment at the
+  api's first start with it (D-1353), no migration. If not, the engine lands first and the key after D-1360.
+- **Founder data (read 21:20 UTC):** every founder current set is open shop: P01, P05, P10 (rules null, NY), P08 (6,
+  45614 OH20260001, no survey lines), Real bid A (set 680, rules 8, saved 20:27 UTC, 77571 TX20260031, survey 1988 so
+  ignored), Real bid B (6, 77041 TX20260031). Nothing moves now (saved sets keep their rules); the Update rates effect is
+  reported by a read-only probe (rules 8 vs 9).
+- **Proof:** QT rows in a new drive `drives/qt-wages-d1359.py` (real OH20260001 Group 1-3 text for the loader and
+  scraper; open-shop own-line, other-machine line and pipelayer rows by hand); the 16-ZIP before/after (backhoe, dozer,
+  excavator, pipelayer); a smoke on a throwaway (Pinal 85138 open shop, Athens prevailing). No migration.
+
+### D-1359, built and proved (2026-11-25 ~22:40 UTC)
+- **Built:** api d3cb5ac (rules 9: `wd/mapping.py` whole names, `rates._own_line_open_shop`, `w14_inputs`/`service`
+  threading) and 7c145f8 (`wages_9` in `WAGE_NOTES`, arrival recorded 22:02:40 UTC at the api's start); app 664d12e
+  (`wages_9`, "wage rules 9", in `RULE_CHANGES`); infra 0fba62c (`drives/qt-wages-d1359.py`, 47 rows; the D-1352 drive
+  checks `OWN_LINE_RULES`). No migration. The count read above corrected: 44 distinct items change (69 occurrences).
+- **QT** 22:17:27-22:35:10 exit 0, 0 FAIL. **Smoke PASS** (throwaway fx.wages.20261125213838, purged 21:44:32): Pinal
+  85138 open shop dozer and backhoe $34.05 (BLS) under the Equipment Operator's $35.81 (the scraper line), excavator
+  $41.37; Athens 45778 prevailing loader and scraper $60.43 on Group 2.
+- **16 ZIPs:** Pinal and Yuma backhoe/dozer/excavator down (off the scraper line); Florida and Utah excavators to the
+  backhoe's figure (the shared "BACKHOE/EXCAVATOR/TRACKHOE" line, 0 % premium); three Utah dozers a little lower (BLS);
+  Ohio, Harris and every pipelayer unchanged. Founder: all six current sets identical by 8 and 9 ($0 now, $0 more on
+  Update rates). Report: `morning-report-2026-11-28/d1359/SECTION.md`.
+- **Slip:** the api saves 21:28-21:32 landed while D-1360's quantity table ran (the D-1357 lock rule); said in the report.
+
+## D-1361 — Night run 2026-11-28, item 3: "Fringe per WD +$X"; "Raised to minimum" only when the base was raised (D-1357 Q4; NEXT-RUN 3)
+
+**The builder's readings, logged before any code (2026-11-25 ~22:45 UTC).**
+- **What the founder saw.** The smoke of D-1352 (Athens 45778 prevailing, direct) showed the carpenter helper's breakdown
+  as "Base wage $35.52 / Raised to minimum +$14.45". The $14.45 is the WD fringe of LABO0265-008, not a raise. Cause:
+  on the direct (payable) basis the breakdown lists the plan fringe only for the rules `wd`, `raised_to_minimum` and
+  `conformed`; a rate on a union-coded WD line (`wd_union_line`), a W14 prevailing rate (`w14_prevailing`, the WD fringe
+  as written) and a W14 union rate (`w14_union`) carry the plan fringe in the paycheck too, so the fringe fell into the
+  gap and the gap took the fallback label "Raised to minimum". A read-only probe of the engine (Athens lines, survey and
+  union-coded, prevailing, union and open shop, direct and burdened, rules 6 and 9) shows the label on every direct
+  `wd_union_line`, `w14_prevailing` and `w14_union` row with a plan fringe, and on no other: no real raise reaches that
+  fallback in the probe. On the burdened basis the same rows read "Fringe (plan)".
+- **The fix (labels only).** (1) A rate whose fringe is the WD's (rules `wd`, `raised_to_minimum`, `conformed`,
+  `wd_union_line`, `w14_prevailing`, `w14_union`) shows ONE fringe line "Fringe per WD", its amount the WD's plan plus
+  cash fringe, on both bases (the WD prints one fringe; both are in the paycheck on these rules). Other rules (an
+  agreement's fringe, open shop) keep "Fringe (plan)" / "Fringe (cash)". (2) On the direct basis a gap that equals a plan
+  fringe the parts did not list is that fringe, not a raise (a guard for any other rule). (3) The fallback "Raised to
+  minimum" is used only when the base was raised to a minimum (the `below_state_min` flag); any other unexplained
+  positive gap reads "Unexplained difference". The named raises ("Raised to national union scale", "Raised to the
+  national open-shop rate", "Your rates' local index") are unchanged. (4) The app shows the fringe line with a plus, as
+  the founder wrote it: "Fringe per WD +$14.45".
+- **No rules bump, no note key.** Only labels change; every part's dollar amount and every rate stays the same (the
+  parts still add to the same total). `WAGE_RULES` stays 9.
+- **Saved sets.** The breakdown is not stored: the api builds it from the saved parts and rule each time a set is read,
+  so old sets (any rules) show the new labels at their next open. No founder data is rewritten.
+- **Proof.** QT drive `drives/qt-wages-d1361.py` (pure, read only): the Athens carpenter helper direct "Fringe per WD"
+  14.45 and no "Raised to minimum"; burdened the same fringe line; a survey-line `wd` rate; a W14 prevailing laborer; a
+  union-coded union rate; a raised case (base under the state minimum, and a union-scale raise) keeps its raise label;
+  the parts add to the rate on every row. Smoke on a throwaway Athens prevailing project. Founder $ by label: $0.
+
+### D-1360, built and proved (2026-11-25 ~22:50 UTC)
+- **Built:** api db23b95 (migration **d1360c4a8e15** on d1354f7b3c20, run on the bench 21:08:54–21:09:10 with
+  `-x rule_arrivals=wages_8=2026-11-25T11:43:21Z`; founder digest 49f90aa6775fddaa before and after), app 80126eb,
+  infra 0980aac (QT drive `qt-rulenote-d1360.py` 15 rows, equipment 177 → 181). Full QT 21:43:11–22:00:52 exit 0, 0 FAIL.
+- **Smoke PASS** on a Real bid A copy with two throwaway members (fx.rulenote.20261125220218, purged 22:45:28): both saw
+  the wages note (+$118.26), the member dismissed it (gone for them after a reload), and it stayed for the owner.
+- **Founder:** nothing written. Real bid A owes the "wages" note, +$118.26 (6 → 8 through two saves), and no rule 8 note.
+  Report: `morning-report-2026-11-28/d1360/SECTION.md`.
+
+## D-1362 — Night run 2026-11-28, item 4: a 4 to 7 day work week, the field beside "Work starts" read only with a link once a rate set exists, the Overtime row refreshed after "Save rates to project" (D-1357 Q7, Q8, Q11; NEXT-RUN 4)
+
+**Status:** Accepted (2026-11-25, the night run's builder, from the founder's D-1357 answers).
+
+- **Q7, 4 to 7 days (replaces D-1354's 5–7 and the rate set's 1–7 for new saves).** Both places that set the week take
+  4, 5, 6 or 7 and refuse anything else with a 422:
+  - beside "Work starts" (`PUT .../weather`, `work_days_per_week`; `weather/service.py:WORK_WEEKS` = 4, 5, 6, 7; the
+    message "The work week is 4, 5, 6 or 7 days."); the select offers 4 days Mon–Thu, 5 Mon–Fri, 6 Mon–Sat, 7 every day.
+  - the rate set's own days a week (Wage calculator › Overtime, `PUT .../wage-set/current/overtime`,
+    `OvertimeWrite.days_per_week` ge 4, le 7); the app's Overtime field says "Days a week is 4 to 7." on any other
+    number and keeps the saved value.
+  - One migration stacked on d1360c4a8e15: `project_weather`'s check becomes `IN (4, 5, 6, 7)`. `project_wage_set.days_per_week`
+    has no check in the database today; none is added (the api validates it, and the reads stay defensive).
+- **Reads stay as they are.** A stored rate-set week is still read 1–7 (`work_week`, `workWeekOf`, `weekShareOf`), so a
+  set saved before tonight with a 1–3 week (none on the bench: all 33 sets are 5) keeps its price. A project week
+  outside 4–7 reads 5, as before.
+- **The math on a 4-day week** needs no new rule: a week of N days works the first N weekdays from Monday (D-1346), so
+  4 days is Monday to Thursday. Days on rent count the Friday to Sunday between work days and not after the last
+  (7 work days from a Monday = 10 days on rent); a Friday start picks up the next Monday; the weather's lost days are
+  the month's share × its days × 4/7; the year's lost-day share does not move with the week (as D-1346 worked it).
+  Labour overtime reads hours a day × 4 days (32 h at 8 h a day, so none; 4 × 10 h = 40 h, none). `src/lib` stays pure.
+- **Q8, read only with a link.** Once the project has a rate set (`work_week_source` "rate_set"), the field beside
+  "Work starts" shows "N days a week, from the rate set" and a link "Change it in Wage calculator › Overtime" that closes
+  Equipment Settings and opens the Wage calculator pane. Before a rate set exists the select stays editable (a viewer
+  reads the week as text, as before). The api already refuses a save while a rate set rules (D-1354).
+- **Q11, the Overtime row refreshes.** "Save rates to project" now also refreshes the project's overtime read, its
+  foreman premium read (the same "save the rates first" state), its weather read and its equipment bundle, so the
+  Overtime row turns editable with the saved set's days a week, and the field beside "Work starts" turns read only,
+  without a reload. Update rates (W11) refreshes the same reads.
+- **Founder $:** expected $0. Every rate set on the bench is on a 5-day week and no project has a week beside "Work
+  starts", so no price moves; checked read only by label before and after.
+- **QT:** a pure drive `drives/qt-workweek-d1362.py` (the 4 to 7 rule on both writes, the 8 and 3 refusals, the reads);
+  the D-1354 drive's two rows that named 5–7 move to the new rule; weather-cases rows for a 4-day week (days on rent
+  from a Monday, a Thursday and a Friday, a 20-day rental, June's lost days at 4/7) and the 7 bound (8 reads 5).
+
+### D-1361, built and proved (2026-11-25 ~23:40 UTC)
+- **Built:** api f0400bf (`rates.breakdown`: `WD_FRINGE_RULES`, one "Fringe per WD" line; a direct gap equal to an
+  unlisted plan fringe is that fringe; "Raised to minimum" only with the state-minimum flag, else "Unexplained
+  difference"); app 74131e2 (the fringe line with a plus); infra 34b2fa3 (`drives/qt-wages-d1361.py`, 38 rows, and its
+  line in `quantity-table.sh`). No migration, no rules bump, no note key.
+- **QT** 23:19:42-23:36:28 exit 0, 0 FAIL. **Smoke PASS** (throwaway fx.wordfix.20261125230655, purged 23:11:40):
+  Athens 45778 prevailing direct, Carpenter Helper "Base wage $35.52 / Fringe per WD +$14.45 / Payable wage $49.97",
+  no "Raised to minimum" on the page. Founder $0 on every label. Report: `morning-report-2026-11-28/d1361/SECTION.md`.
+
+## D-1363 — Night run 2026-11-28, item 5: the catalog converter's name patterns move to a private file outside git (D-1357 Q13; NEXT-RUN 5)
+
+**Reading.** The founder's Q13: the escaped names D-1351 left in `scripts/equipment_catalog_convert.py` are still the
+names, only encoded. They leave the repo entirely.
+
+- **What moves.** Everything in the converter that names a publisher or a competitor: the text rewrites (pattern and
+  generic replacement, in order), the "a name survived" check pattern, and the source-id rename (key and new id). The
+  script keeps the code that applies them and no name in any spelling or encoding: no `\xHH` string, no plain name.
+- **Where it lives.** A JSON file outside every repo, `E:\Intelcost\.private\catalog-convert-patterns.json` on this
+  laptop. The script reads the path from `INTELCOST_CATALOG_PATTERNS`; unset, it looks for
+  `.private/catalog-convert-patterns.json` in the folder that holds the api repo (the workspace root). `.private/` is not
+  in any repo and not in the `intelcost-infra/workspace/` mirror. The file is never committed, printed or quoted.
+- **Refusal.** Missing file, unreadable JSON, a missing or wrongly typed key, or a pattern that does not compile: the
+  converter stops before it opens the workbook, with a message naming the path and the fault (never the file's
+  content), and exits non-zero (2).
+- **Same output.** With the file in place the converter writes byte-identical CSVs and `release.json`. Proof: the old
+  (a48e85d) and new scripts run on the same workbook (the catalog under `docs/reference/equipment/`, the source of
+  release 1 by its sha256) in a throwaway python container, outputs in the session scratch dir, compared byte for byte.
+  Nothing is written to the bench DB or the seed folder.
+- **History is not rewritten.** Commits a48e85d and 522670a keep the old forms (escaped, and before that plain). Pushed
+  history is never rewritten; removing them from history would be a separate, explicit founder decision.
+- **Deploy.** The converter is an offline build tool, run by hand when a library release is cut. The api never imports
+  it and no deploy runs it, so staging and production need no copy of the file. Only a machine that cuts a release
+  needs it, at the default path or by the env var.
+
+**Close-out of the night run 2026-11-28 (D-1358), 2026-11-26 00:44–01:3x UTC.** Nothing came in from origin/umer-dev or
+origin/staging (no merge). The two migrations folded into one revision, **`d1362c5f8a14`** (revises `d1354f7b3c20`;
+D-1360's `wages_8` arrival with its `-x rule_arrivals=` option and `estimate_rule_note_dismissal`, then D-1362's 4-to-7
+check), api 6c10bb8. The fold's `-x` reading now lets the two keys `d1354f7b3c20` records through untouched, so the
+bench's whole string passes from `d1354f7b3c20` up; `d1354f7b3c20` itself (pushed, not rewritten) still refuses
+`wages_8`, so a database below it upgrades in two steps if it needs past times. `wages_9` has no migration row (the api
+records it at its first start). Bench switched 00:47:43–00:49:07 (down on the two files, up on the folded one with
+rental_billing 2026-11-24T13:52:00Z, wages 2026-11-25T05:41:42Z, wages_8 2026-11-25T11:43:21Z): the four arrival rows
+identical (wages_9 kept as "api start"), schema identical, one head, `alembic check` clean; 0 dismissals, no week set,
+nothing lost. Gates: api ruff, format, mypy (in the container) and the app's lint, typecheck, build, run fully and
+chained with no `tail` (D-1362 and D-1363 had piped theirs). Full QT 01:03:55–01:20:32 exit 0, 0 FAIL (covers D-1363,
+whose builder could not run it). Client and book names 0 in every changed file, the commit messages and the report
+folder; the private patterns file is in no repo and not in the mirror. FEATURES (no Live moves), MANAGER (In Progress
+rows D-1359 to D-1364), SINCE_ARCHIVE updated; mirror refreshed. Throwaways: none left (0 fx accounts or workspaces
+made tonight, 0 BENCH DUPs). Digest 49f90aa6775fddaa at start and end. One push per repo.
