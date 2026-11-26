@@ -4,6 +4,9 @@
 #   ./gate-commit.sh app --owner D-1368 -m "D-1368 (app): ..." [-m "..."]
 #   ./gate-commit.sh api --owner D-1368 -F message.txt
 #   ./gate-commit.sh app --owner D-1368 --dry-run          (the gates and the stamp, no commit)
+#   ./gate-commit.sh app --owner D-1368 --verify-head      (D-1373: the gates on a clean HEAD and its stamp, no
+#                                                           commit; what a push needs after a merge, cherry-pick,
+#                                                           revert or rebase; gate-push.sh calls it)
 #
 # app: npm run lint, npm run typecheck, npm run build (host). api: ruff check ., ruff format --check ., mypy app and
 # alembic heads = exactly one head, in the bench api container after its own founder-active quiet (poetry on the
@@ -16,6 +19,10 @@
 # All 0: writes the pass stamp E:\Intelcost\.private\gate-pass\<repo>-<tree> (tree = git write-tree of the index)
 # and commits. The founder gate hook refuses a plain `git commit` in the app or api repo unless such a stamp exists
 # for exactly the staged tree, so a commit after a failing gate, or after staging something new, is refused.
+#
+# --verify-head (D-1373) also refuses when anything is staged or a merge, rebase, cherry-pick, revert or am is in
+# progress, so the working tree the gates read is exactly HEAD's tree; the stamp is then HEAD's tree, which the hook
+# needs before a `git push` of umer-dev.
 
 set -u
 set -o pipefail
@@ -30,21 +37,24 @@ shift || true
 case "$repo_kind" in
   app) repo="$root/intelcost-app-react" ;;
   api) repo="$root/intelcost-app-fastapi" ;;
-  *) echo "usage: gate-commit.sh app|api --owner D-NNNN [--dry-run] (-m msg ... | -F file)" >&2; exit 2 ;;
+  *) echo "usage: gate-commit.sh app|api --owner D-NNNN [--dry-run | --verify-head] (-m msg ... | -F file)" >&2; exit 2 ;;
 esac
 owner=''
 dry=''
+verify_head=''
 msg=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --owner) owner="${2:-}"; shift 2 ;;
     --dry-run) dry=1; shift ;;
+    --verify-head) dry=1; verify_head=1; shift ;;
     -m|-F) [ -n "${2:-}" ] || die "$1 needs a value"; msg+=("$1" "$2"); shift 2 ;;
-    *) die "unknown argument '$1' (only --owner, --dry-run, -m, -F)" ;;
+    *) die "unknown argument '$1' (only --owner, --dry-run, --verify-head, -m, -F)" ;;
   esac
 done
 [ -n "$owner" ] || die "--owner D-NNNN is required (the heavy lock's owner)"
 [ -n "$dry" ] || [ ${#msg[@]} -gt 0 ] || die "a commit message is required (-m or -F), or --dry-run"
+[ -z "$verify_head" ] || [ ${#msg[@]} -eq 0 ] || die "--verify-head makes no commit: no -m or -F"
 
 cd "$repo" || die "no repo at $repo"
 branch="$(git branch --show-current)"
@@ -57,6 +67,14 @@ untracked="$(git ls-files --others --exclude-standard)"
 $untracked"
 if [ -z "$dry" ] && git diff --cached --quiet; then die "nothing staged"; fi
 tree="$(git write-tree)" || die "git write-tree failed (a conflict in the index?)"
+if [ -n "$verify_head" ]; then
+  git diff --cached --quiet || die "--verify-head: changes are staged (HEAD's tree is not what the gates would read)"
+  gd="$(git rev-parse --git-dir)"
+  for op in MERGE_HEAD CHERRY_PICK_HEAD REVERT_HEAD rebase-merge rebase-apply; do
+    [ -e "$gd/$op" ] && die "--verify-head: a merge, cherry-pick, revert, rebase or am is in progress ($op)"
+  done
+  [ "$tree" = "$(git rev-parse 'HEAD^{tree}')" ] || die "--verify-head: the index is not HEAD's tree"
+fi
 
 qt="$(bash "$here/lock.sh" qt-running)" && die "$qt; wait for it to finish (./lock.sh status)"
 lk="$(bash "$here/lock.sh" acquire heavy "$owner")" || die "heavy lock: $lk"
@@ -136,6 +154,10 @@ find "$PASS_DIR" -maxdepth 1 -type f -mtime +2 -delete 2>/dev/null
 printf 'gate pass %s tree %s head %s, %s to %s, owner %s:%s\n' "$repo_kind" "$tree" "$(git rev-parse HEAD)" "$start" \
   "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$owner" "$summary" >"$PASS_DIR/$repo_kind-$tree"
 echo "gate-commit: every gate exited 0 (${summary# }); pass stamp $repo_kind-${tree:0:12}"
+if [ -n "$verify_head" ]; then
+  echo "gate-commit: --verify-head, no commit (HEAD $(git rev-parse --short HEAD), tree ${tree:0:12}: a git push of it now passes the hook)"
+  exit 0
+fi
 if [ -n "$dry" ]; then
   echo "gate-commit: --dry-run, no commit (a plain git commit of exactly this staged tree now passes the hook)"
   exit 0

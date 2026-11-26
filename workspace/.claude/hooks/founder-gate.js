@@ -2,7 +2,8 @@
 // would touch that the gate covers ("a save to <path>", "a bench migration (...)", "git <sub> in <repo>"), or
 // nothing when the call is not gated. Prints "?" when it cannot read the call; the shell half then falls back to
 // a plain pattern check. Data in, text out: it never blocks by itself. After that first line, one line per
-// `git commit` in the app, api or infra repo (D-1367, commitsOf below), for the shell half's pass-stamp check.
+// `git commit` in the app, api or infra repo (D-1367, commitsOf below), and one per `git push` in the app or api
+// repo (D-1373), for the shell half's pass-stamp check.
 //
 // Gated:
 //   - Edit, Write, MultiEdit, NotebookEdit on app or api source (APP and API below).
@@ -309,17 +310,20 @@ function writes(cmd, cwd) {
   return "";
 }
 
-// ---- git commit in the app, api or infra repo (D-1367) ---------------------------------------------------
+// ---- git commit in the app, api or infra repo (D-1367); git push in the app or api repo (D-1373) ---------
 
 // One line per `git commit` the command runs in one of the three repos:
 //   COMMIT\t<app|api|infra>\t<dir>     the shell half checks the pass stamp for the staged tree
 //   COMMITBAD\t<app|api|infra>\t<why>  a commit of a tree other than the staged one (-a, -i, -o, a pathspec)
+// and one per `git push` in the app or api repo:
+//   PUSH\t<app|api>\t<dir>             the shell half checks the pass stamp for the tree of the local umer-dev
+//   PUSHBAD\t<app|api>\t<why>          any form other than `git push [-n|--dry-run|-v|-q|--porcelain] origin umer-dev`
 const INFRA = /(^|\/)intelcost-infra(\/|$)/;
 function commitsOf(call) {
   const tool = String(call.tool_name || "");
   if (!/^(Bash|PowerShell)$/.test(tool)) return [];
   const cmd = String((call.tool_input || {}).command ?? "");
-  if (!/\bcommit\b/.test(cmd)) return [];
+  if (!/\b(commit|push)\b/.test(cmd)) return [];
   const out = [];
   let base = call.cwd ? norm(call.cwd) : "";
   for (const line of stripHeredocs(cmd)) {
@@ -350,7 +354,16 @@ function commitsOf(call) {
         if (a.startsWith("-")) continue;
         break;
       }
-      if ((args[i] || "").toLowerCase() !== "commit") continue;
+      const sub = (args[i] || "").toLowerCase();
+      if (sub === "push") {
+        const pm = dir.match(/intelcost-app-(react|fastapi)/);
+        if (!pm || !REPO.test(dir)) continue;
+        const kind = pm[0] === "intelcost-app-react" ? "app" : "api";
+        const why = pushOther(args.slice(i + 1));
+        out.push(why ? `PUSHBAD\t${kind}\t${why}` : `PUSH\t${kind}\t${dir}`);
+        continue;
+      }
+      if (sub !== "commit") continue;
       const m = dir.match(/intelcost-app-(react|fastapi)|intelcost-infra/);
       if (!m || !(REPO.test(dir) || INFRA.test(dir))) continue;
       const kind = m[0] === "intelcost-app-react" ? "app" : m[0] === "intelcost-app-fastapi" ? "api" : "infra";
@@ -359,6 +372,21 @@ function commitsOf(call) {
     }
   }
   return out;
+}
+
+// Why a push is not the one form the gate reads (D-1373), or "". Fail closed: anything else is refused.
+function pushOther(rest) {
+  const SAFE = /^(-n|--dry-run|-v|--verbose|-q|--quiet|--porcelain)$/;
+  const plain = [];
+  for (const a of rest) {
+    if (a.startsWith("-")) {
+      if (!SAFE.test(a)) return `the option ${a}`;
+      continue;
+    }
+    plain.push(a);
+  }
+  if (plain.length === 2 && plain[0] === "origin" && plain[1] === "umer-dev") return "";
+  return plain.length ? `the remote and refspec "${plain.join(" ")}"` : "no remote and refspec";
 }
 
 // Why a commit's options would record a tree other than the staged index, or "".

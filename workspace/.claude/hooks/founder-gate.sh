@@ -24,6 +24,14 @@
 #     for exactly the staged tree (`git write-tree`); -a, -i, -o and a pathspec are refused (another tree). An infra
 #     commit whose staged files touch the QT's inputs needs the QT's pass stamp qt-<key> (intelcost-infra/qt-key.sh).
 #
+# D-1373 (the founder's D-1371 Q7, Q9):
+#   - A `git push` in the app or api repo is refused unless it is exactly `git push [-n|--dry-run|-v|-q|--porcelain]
+#     origin umer-dev` and a gate pass stamp <app|api>-<tree> at most 24 h old exists for the tree of the local
+#     umer-dev (the commit the push sends). A merge, cherry-pick, revert or rebase leaves a tree no gate read, so its
+#     push waits for `intelcost-infra/gate-push.sh app|api --owner D-NNNN` (gates on HEAD, then the push).
+#   - The QT inputs of the infra commit rule now include lock.sh, gate-commit.sh, gate-push.sh, qt-key.sh and the
+#     hook mirror workspace/.claude/hooks/ (qt-key.sh hashes these live hooks under their mirror paths).
+#
 # Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr), as the rule 7 and D-592 hooks do.
 # Each refusal is appended to .private/founder-gate.log.
 
@@ -38,7 +46,7 @@ max_age=120
 # Nothing names the app, the api, alembic, docker or a commit: not gated (the common case, decided without node).
 shopt -s nocasematch
 case "$input" in
-  *intelcost-app-*|*alembic*|*docker*|*commit*) ;;
+  *intelcost-app-*|*alembic*|*docker*|*commit*|*push*) ;;
   *) exit 0 ;;
 esac
 shopt -u nocasematch
@@ -72,6 +80,10 @@ if [ "$what" = '?' ]; then
     refuse "a git commit (the call could not be read)" \
       "Blocked by D-1367: a git commit in the app, api or infra repo, and this hook could not read the call to check its gate pass. Commit with intelcost-infra/gate-commit.sh (app, api) or as a plain git commit the hook can read."
   fi
+  if printf '%s' "$input" | grep -Eiq 'intelcost-app-(react|fastapi)' && printf '%s' "$input" | grep -Eiq '\bgit\b[^"]*\bpush\b'; then
+    refuse "a git push (the call could not be read)" \
+      "Blocked by D-1373: a git push in the app or api repo, and this hook could not read the call to check its gate pass. Push with intelcost-infra/gate-push.sh app|api --owner <your D-number>."
+  fi
 fi
 
 # ---- D-1367: a commit needs its pass stamp ----------------------------------------------------------------
@@ -88,16 +100,35 @@ if [ -n "$commits" ]; then
       refuse "git commit in $kind with $arg" \
         "Blocked by D-1367: a git commit in the $kind repo with $arg commits a tree other than the staged one, which no gate read. Stage by name, then commit the staged tree (app, api: intelcost-infra/gate-commit.sh)."
     fi
+    if [ "$tag" = PUSHBAD ]; then
+      refuse "git push in $kind with $arg" \
+        "Blocked by D-1373: a git push in the $kind repo with $arg. The only push the gate reads is
+  git push origin umer-dev            (or with --dry-run, -v, -q, --porcelain; never a force, never another ref)
+and it needs a gate pass on the tree it sends. From intelcost-infra/ run:
+  ./gate-push.sh $kind --owner <your D-number> [--dry-run]"
+    fi
+    if [ "$tag" = PUSH ]; then
+      tree=$(git -C "$arg" rev-parse --verify -q 'umer-dev^{tree}' 2>/dev/null)
+      if [ -z "$tree" ] || ! fresh "$pass/$kind-$tree"; then
+        refuse "git push in $kind, no gate pass for umer-dev's tree ${tree:-?}" \
+          "Blocked by D-1373: a git push in the $kind repo needs every gate to have exited 0 on exactly the tree it sends
+(umer-dev's tree ${tree:0:12}), and there is no pass for it in the last 24 h: a merge, cherry-pick, revert or rebase
+made a commit no gate read, or the gates have not run on it. From intelcost-infra/ run:
+  ./gate-push.sh $kind --owner <your D-number> [--dry-run]
+It runs the full gates on a clean HEAD with every exit code read and pushes origin umer-dev only when all are 0."
+      fi
+      continue
+    fi
     [ "$tag" = COMMIT ] || continue
     if [ "$kind" = infra ]; then
       top=$(git -C "$arg" rev-parse --show-toplevel 2>/dev/null) || continue
       git -C "$top" diff --cached --name-only 2>/dev/null |
-        grep -Eq '^(quantity-table\.sh|browser/quantity-table\.mjs|browser/lib/|drives/)' || continue
+        grep -Eq '^(quantity-table\.sh|browser/quantity-table\.mjs|browser/lib/|drives/|lock\.sh|gate-commit\.sh|gate-push\.sh|qt-key\.sh|workspace/\.claude/hooks/)' || continue
       key=''
       [ -f "$top/qt-key.sh" ] && key=$(bash "$top/qt-key.sh" --index 2>/dev/null)
       if [ -z "$key" ] || ! fresh "$pass/qt-$key"; then
         refuse "git commit in infra touching the QT's inputs, no QT pass for key ${key:-?}" \
-          "Blocked by D-1367: this infra commit stages quantity-table inputs (quantity-table.sh, browser/quantity-table.mjs, browser/lib/, drives/), and no quantity table passed (exit 0, 0 FAIL) on exactly these files in the last 24 h (key ${key:0:12}). From intelcost-infra/ run QT_OWNER=<your D-number> ./quantity-table.sh with these files as staged, then commit."
+          "Blocked by D-1367/D-1373: this infra commit stages quantity-table inputs (quantity-table.sh, browser/quantity-table.mjs, browser/lib/, drives/) or enforcement files (lock.sh, gate-commit.sh, gate-push.sh, qt-key.sh, the hook mirror workspace/.claude/hooks/), and no quantity table passed (exit 0, 0 FAIL) on exactly these files in the last 24 h (key ${key:0:12}). The QT's key reads the live hooks in E:/Intelcost/.claude/hooks/, so the staged hook mirror must equal them. From intelcost-infra/ run QT_OWNER=<your D-number> ./quantity-table.sh with these files as staged, then commit."
       fi
       continue
     fi

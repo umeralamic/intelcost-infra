@@ -257,7 +257,7 @@ Waits are on page state, never a clock: `enterWorkspace`, `shellSettled`, `pageS
 and `sheetPoint` (a point on the sheet checked to be in the window). `quietFor` only to
 prove something does not happen.
 
-## Locks, the quantity table and gate-commit (D-1367)
+## Locks, the quantity table, gate-commit and gate-push (D-1367, D-1373)
 
 The tools refuse what the rules used to only state (the founder's D-1365).
 
@@ -294,6 +294,28 @@ host when present), each exit code read; the first non-zero stops it. All 0: the
 The hook refuses a plain `git commit` in the app or api repo unless such a stamp (at most 24 h old) exists for exactly
 the staged tree, and refuses `-a`, `-i`, `-o` and a pathspec there. An infra commit that stages a QT input needs the QT
 pass stamp for exactly the staged files (`./qt-key.sh --index`); other infra commits are not gated.
+
+**Pushes of the app and api go through `./gate-push.sh` (D-1373):**
+
+```bash
+./gate-push.sh app --owner D-NNNN [--dry-run]
+./gate-push.sh api --owner D-NNNN [--dry-run]
+./gate-commit.sh app|api --owner D-NNNN --verify-head   # the gates on a clean HEAD and its stamp, no commit, no push
+```
+
+A merge, cherry-pick, revert or rebase makes commits no gate read, so the push is where the gates are required. The
+hook refuses any `git push` in the app or api repo except `git push [--dry-run|-n|-v|-q|--porcelain] origin umer-dev`,
+and that one only when a gate pass stamp (at most 24 h old) exists for the tree of the local `umer-dev`.
+`gate-push.sh` refuses a branch other than `umer-dev`, anything staged, unstaged or untracked, a merge, rebase,
+cherry-pick, revert or am in progress, and a running QT; uses a fresh stamp for HEAD's tree if one exists (a
+`gate-commit.sh` commit leaves one), else runs `gate-commit.sh --verify-head`; then pushes `origin umer-dev`. Never a
+force; a non fast-forward is refused by git (merge, then run it again).
+
+**Enforcement files count as QT inputs (D-1373).** `lock.sh`, `gate-commit.sh`, `gate-push.sh`, `qt-key.sh` and the
+hook mirror `workspace/.claude/hooks/` are in the QT key. `./qt-key.sh --worktree` reads the LIVE hooks in
+`E:\Intelcost\.claude\hooks\` under their mirror paths, so an infra commit staging any of these needs a QT that passed
+with exactly these files, the live hooks equal to the staged mirror. A hook change is copied to the mirror and staged
+with the QT pass, and its report records a deliberate attempt the change refuses.
 
 ## The fixture suite, archived
 
