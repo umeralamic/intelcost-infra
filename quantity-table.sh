@@ -241,6 +241,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-workweek-d1362.py
 # D-1360 (the founder's Q3/Q6): which wage note a rate set's move owes, wage rules 8's own key among them (one note per
 # move, re-saves skipped, other inputs owe nothing; Real bid A's chain); each by hand, pure (no database).
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1360.py" </dev/null || { echo "FAIL  rule notes (above)"; exit 1; }
+# D-1369 (the founder's Q6): every move of a rate set not yet shown keeps its note through later moves (6 -> 8 -> 10 with
+# no open owes both; Real bid A's stored chain then Update rates owes "wages" and "wage rules 9"; each key once, re-saves
+# skipped, other inputs end the walk); the sets' subtype rates read for the note's pass (Q7); each by hand, pure.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1369.py" </dev/null || { echo "FAIL  rule notes kept through moves (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.

@@ -439,6 +439,65 @@ export const EQUIPMENT_CASES = [
   { id: "rule-note-wages8-moved", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages_8: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: ["wages_8"] } },
   { id: "rule-note-wages-6-to-8-one-note", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages: { movedAt: "2026-11-25T20:25:50Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: ["wages"] } },
   { id: "rule-note-wages8-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-10-13T17:16:59Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-26T09:00:00Z" }, { key: "wages_8", delta: -1.25, shown_at: "2026-11-27T09:10:00Z" }], arrivals: { ...BENCH_ARRIVALS, wages_8: "2026-11-25T11:43:21Z" }, wageMoves: { wages_8: { movedAt: "2026-11-27T09:00:00Z", rates: { "CC-10": [64.97, 65.04] } } }, expect: { owed: [] } },
+  // D-1369 (the founder's Q6): every move not yet shown keeps its note. The api answers each owed move under its own key
+  //   (`drives/qt-rulenote-d1369.py` checks which); Real bid A after an Update rates before any open: "wages" (6 -> 8,
+  //   534 -> 680, not the current set) and "wage rules 9" (8 -> 10, the current set): both owed; once "wages" is recorded
+  //   only "wage rules 9" is.
+  { id: "rule-note-two-moves-owed", kind: "rule-note", owed: true, firstPricedAt: "2026-11-05T09:57:17Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-25T10:36:54Z" }], arrivals: BENCH_ARRIVALS, wageMoves: { wages: { movedAt: "2026-11-25T20:25:50Z", rates: { "CC-10": [64.97, 65.04] }, current: false }, wages_9: { movedAt: "2026-11-26T06:30:00Z", rates: { "CC-10": [65.04, 65.05] }, current: true } }, expect: { owed: ["wages", "wages_9"] } },
+  { id: "rule-note-two-moves-one-recorded", kind: "rule-note", owed: true, firstPricedAt: "2026-11-05T09:57:17Z", records: [{ key: "rental_billing", delta: 0, shown_at: "2026-11-25T10:36:54Z" }, { key: "wages", delta: 118.26, shown_at: "2026-11-26T06:40:00Z" }], arrivals: BENCH_ARRIVALS, wageMoves: { wages_9: { movedAt: "2026-11-26T06:30:00Z", rates: { "CC-10": [65.04, 65.05] }, current: true } }, expect: { owed: ["wages_9"] } },
+  // D-1369: each move's amount is its own (`wagesBeforeComponents`, the labour rows that follow the set at each side's rate,
+  //   from the current set's), so the parts add to the whole chain and none is counted twice. A crew of 2 at CC-10, 10 h:
+  //   now 65.05. "wages" (64.97 -> 65.04, not current): 2 x 10 x 0.07 = +$1.40; "wage rules 9" (65.04 -> 65.05, current):
+  //   2 x 10 x 0.01 = +$0.20; together 2 x 10 x (65.05 - 64.97) = $1.60.
+  {
+    id: "rule-note-chain-amounts",
+    kind: "rule-note",
+    wagePass: {
+      hours: 10,
+      components: [{ crew: [{ role: "Operator", count: 2, hourly_wage: 65.05, craft_code: "CC-10", rate_source: "wage_set" }] }],
+      context: { now: { rates: { "CC-10": 65.05 } }, machines: {} },
+      moves: [
+        { movedAt: "2026-11-25T20:25:50Z", rates: { "CC-10": [64.97, 65.04] }, current: false },
+        { movedAt: "2026-11-26T06:30:00Z", rates: { "CC-10": [65.04, 65.05] }, current: true },
+      ],
+    },
+    expect: { amounts: [1.4, 0.2], total: 1.6 },
+  },
+  // D-1369 (the founder's Q7): a machine's own rate counts. An excavator operator (CC-11, follows machine m1, an excavator)
+  //   at the excavator subtype, now 48.30; the craft rate does not move (39.78), the subtype does (48.29 -> 48.30): 1 x 100 h
+  //   x 0.01 = +$1.00 (D-1364: $0 when only the craft was read). Its foreman (53.13 = 48.30 x 1.10) takes the top row's
+  //   scale: 53.13 x 100 x 0.01 / 48.30 = +$1.10; together +$2.10. A row typed by hand: nothing. Next row: a pipelayer
+  //   (rate_as, CC-16 flat 33.57, its group 34.52 -> 34.56, now 34.56) x 50 h: +$2.00.
+  {
+    id: "rule-note-machine-only-move",
+    kind: "rule-note",
+    wagePass: {
+      hours: 100,
+      components: [
+        {
+          crew: [
+            { role: "Excavator operator", count: 1, hourly_wage: 48.3, craft_code: "CC-11", rate_source: "wage_set", for_equipment: "m1" },
+            { role: "Foreman", count: 1, hourly_wage: 53.13, craft_code: "CC-11", rate_source: "wage_set", foreman: true },
+            { role: "Laborer", count: 1, hourly_wage: 30, craft_code: "CC-16", rate_source: "manual" },
+          ],
+        },
+      ],
+      context: { now: { rates: { "CC-11": 39.78, "CC-16": 33.57 }, subtypes: { "CC-11": { excavator: 48.3 }, "CC-16": { pipelayer: 34.56 } } }, machines: { m1: "excavator" } },
+      moves: [{ movedAt: "2026-11-26T06:30:00Z", rates: { "CC-11": [39.78, 39.78], "CC-16": [33.57, 33.57] }, subtypes: { "CC-11": { excavator: [48.29, 48.3] }, "CC-16": { pipelayer: [34.52, 34.56] } }, current: true }],
+    },
+    expect: { amounts: [2.1], total: 2.1 },
+  },
+  {
+    id: "rule-note-pipelayer-group-move",
+    kind: "rule-note",
+    wagePass: {
+      hours: 50,
+      components: [{ crew: [{ role: "Pipelayer", count: 1, hourly_wage: 34.56, craft_code: "CC-16", rate_source: "wage_set", rate_as: "Pipelayer" }] }],
+      context: { now: { rates: { "CC-16": 33.57 }, subtypes: { "CC-16": { pipelayer: 34.56 } } }, machines: {} },
+      moves: [{ movedAt: "2026-11-26T06:30:00Z", rates: { "CC-16": [33.57, 33.57] }, subtypes: { "CC-16": { pipelayer: [34.52, 34.56] } }, current: true }],
+    },
+    expect: { amounts: [2], total: 2 },
+  },
   // D-1353 (the founder's Q4): Needs attention lists a record until it is dismissed, at every open; $0 never shows.
   //   P10's expected rental note (D-1345: rent −$5,711.29 + its 12 % waiver), then dismissed, then a $0 record, then the
   //   P01-copy wages note of D-1350's smoke (−$8.47).
@@ -831,6 +890,14 @@ export async function runEquipment(page, eqlib) {
         }
         if (c.kind === "rule-note") {
           if (c.owed) return { owed: rc.changesOwed(c.firstPricedAt, c.records, c.arrivals, rc.RULE_CHANGES, c.wageMoves ?? {}).map((x) => x.key) };
+          // D-1369: each move's amount, the labour rows at its after set (the rows as they stand when it is the current set)
+          //   less the same at its before set; crew cost = wage x count x hours.
+          if (c.wagePass) {
+            const { hours, components, context, moves } = c.wagePass;
+            const cost = (comps) => comps.reduce((t, comp) => t + comp.crew.reduce((u, r) => u + Number(r.hourly_wage) * Number(r.count) * hours, 0), 0);
+            const amounts = moves.map((m) => rc.ruleDelta(cost(m.current === false ? rc.wagesBeforeComponents(components, m, context, 1) : components), cost(rc.wagesBeforeComponents(components, m, context, 0))));
+            return { amounts, total: rc.ruleDelta(amounts.reduce((t, a) => t + a, 0), 0) };
+          }
           // D-1353: the notes Needs attention lists, and the rental line's words.
           if (c.shown) return { shown: c.shown.map((records) => rc.notesShown(records, "USD").map((n) => n.text)) };
           if (c.rentLabels) return { rentLabels: c.rentLabels.map(([d, start]) => periods.rentLabel(periods.solveRental({ day: 1040, week: 2927, fourWeek: 7950 }, d, d * 8, undefined, start ? { startWeekday: periods.weekdayOf(start) } : {}))) };
