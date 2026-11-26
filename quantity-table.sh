@@ -224,6 +224,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1352.py" <
 # D-1359 (wage rules 9): a WD line names a machine by its whole name (the Athens loader and scraper on Group 2), open shop
 # reads each machine's own survey line (else BLS) and the pipelayer its own beside BLS, the wages_9 note key; by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1359.py" </dev/null || { echo "FAIL  wage rules 9 (above)"; exit 1; }
+# D-1368 (wage rules 10): on open shop a craft's own row drops a survey line that names one machine (BLS instead), and a
+# machine's premium is dropped only when its own survey line is used (the Yuma and Florida split pairs are no split);
+# the wages_10 note key; by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1368.py" </dev/null || { echo "FAIL  wage rules 10 (above)"; exit 1; }
 # D-1361 (the founder's Q4): the breakdown's words. A WD fringe reads "Fringe per WD" (the Athens carpenter helper's
 # 14.45, not "Raised to minimum"); "Raised to minimum" only when the base was raised; the parts add to every rate.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1361.py" </dev/null || { echo "FAIL  wage breakdown words (above)"; exit 1; }

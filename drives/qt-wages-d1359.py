@@ -139,7 +139,8 @@ async def main() -> int:
     ref, market = RefData(), load_market()
     wrong: list[str] = []
     rows = 0
-    check(wrong, "d1359-rules", (WAGE_RULES, OWN_SURVEY_RULES), (9, 9))
+    # Rules 9's own number (D-1368 moved WAGE_RULES on to 10; every row below names its rules).
+    check(wrong, "d1359-rules", (WAGE_RULES >= 9, OWN_SURVEY_RULES), (True, 9))
     rows += 1
 
     # Item 1: the names one item gives (whole names, whole words).
