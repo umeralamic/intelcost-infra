@@ -37568,3 +37568,212 @@ intelcost-infra/morning-report-2026-11-28/NEXT-RUN.md.
   (b) every gate runs with pipefail (or its exit code read), and the commit step refuses if any gate's exit code is not 0.
   Prove both with a deliberate attempt (a save while the QT holds the lock is refused; a commit after a failing gate is
   refused).
+
+## D-1366 — Night run 2026-11-29: the queue from morning-report-2026-11-28/NEXT-RUN.md (D-1365)
+
+Brief: run unattended, no time limit, in the queue's order, enforcement first. Standing rules as always. Fingerprint
+at start 03:26 UTC: 49f90aa6775fddaa, equal to the baseline. Max 2 builders, a checkpoint after every item. Report in
+morning-report-2026-11-29, pricing questions first, with NOTE_FOR_ABDULLAH.md; one push per repo (infra includes
+07fcc88).
+- D-1367: item 1, enforcement (the QT takes the app lock itself; the gate hook refuses app/api saves while a QT holds
+  it; gates with pipefail and a commit step that refuses unless every gate exited 0; both proved by a deliberate try).
+- D-1368: item 2, wage rules 10 (the craft row drops a one-machine survey line; the excavator premium dropped only when
+  its own line is used).
+- D-1369: item 3, the owed note kept through later moves; machine-rate moves counted.
+- D-1370: item 4, exact note amounts on throwaway copies of P08, P10, Real bid B.
+
+## D-1367 — Night run 2026-11-29, item 1: enforcement. The quantity table takes the heavy and app locks itself, the founder gate refuses app/api saves while a QT holds the app lock, and app/api commits need a pass stamp from a gate helper that reads every gate's exit code (D-1365 "Enforce, don't just state"; D-1366)
+
+**Status:** Accepted (2026-11-26, the night run's builder, from the founder's D-1365 order).
+
+**Reading.** Stated rules (D-1357, D-1362's "never pipe a gate") were broken in practice twice. The founder wants the
+tools to refuse, not the builders to remember. Three pieces, each enforced by code a session cannot skip by accident.
+
+- **Locks move to a durable place.** The lock helper is versioned as `intelcost-infra/lock.sh`; its lock folders and
+  log live in `E:\Intelcost\.locks\` (outside every repo and outside the mirror; `INTELCOST_LOCKS` overrides it). The
+  session scratchpad's `lock.sh` becomes a one-line forwarder, so tonight's instructions keep working. Commands:
+  `lock.sh acquire|release <lock> <owner> [wait-s]`, `lock.sh status`, `lock.sh clear-stale [<lock>]`. Same locks and
+  order as before (heavy, app, api, mcp).
+- **(a) The QT holds heavy and app itself.** `quantity-table.sh` takes heavy then app before its first step and drops
+  them on exit (an EXIT trap; INT, TERM and HUP exit through it). Owner `QT_OWNER` (a builder's D-number) else
+  `qt-<pid>`. A lock the same owner already holds is adopted, not waited on, and left held for that owner at the end;
+  a lock someone else holds is waited on (`QT_LOCK_WAIT`, default 3600 s), then the QT fails without running. While it
+  runs each lock folder carries the QT's process marks (`qt.pid`, the Windows pid beside it, the start time).
+  - **Stale.** A QT that dies without its trap (kill -9, a closed terminal) leaves marks whose process is gone. The
+    marks are compared with the live process table (`/proc/<pid>/winpid` must exist and equal the recorded Windows
+    pid, so a reused pid is not taken for the QT). `lock.sh status` shows such a lock STALE; `lock.sh clear-stale`
+    and the next `acquire` remove it (a QT-acquired lock is freed; an adopted one keeps its owner and loses only the
+    marks). Nothing is ever killed by them (hard rule 13).
+  - **The hook refuses.** `founder-gate.sh` refuses every action it already gates (an app or api source save by the
+    edit tools or a shell write, a git checkout/switch/pull/merge/stash/... in those repos, a bench migration, a docker
+    exec/cp/run into or of an app or api container) while `app.lock` carries live QT marks, before it looks at the
+    quiet stamp, so a fresh stamp does not lift it and is not spent. Stale marks do not refuse (the QT is not running).
+    Unreadable marks refuse (closed, for the gated actions only). Ordinary calls stay on the hook's fast path.
+  - **The QT reads its own FAIL lines.** Its output is kept (tee) and, after the run, any line with FAIL turns an exit
+    0 into exit 1 ("exit 0 but N FAIL lines"), so exit code and `grep -c FAIL` cannot disagree.
+- **(b) Gates with every exit code read, and a commit that needs a pass.** New `intelcost-infra/gate-commit.sh app|api
+  --owner D-NNNN [--dry-run] (-m msg ... | -F file)`:
+  - Refuses before any gate: not on `umer-dev`; an unstaged change to a tracked file or an untracked file not ignored
+    (the gates read the working tree, so it must equal the staged tree); nothing staged (unless `--dry-run`); a QT
+    running. Takes heavy (adopted if the owner holds it), released on exit.
+  - app: `npm run lint`, `npm run typecheck`, `npm run build` on the host, each with `set -o pipefail` and its exit
+    code read; the first non-zero stops the run. api: `ruff check .`, `ruff format --check .`, `mypy app` and
+    `alembic heads` (exactly one head) in the bench api container, one `docker compose exec` after its own
+    `founder-active.sh` quiet (spent at once), each code printed and read; poetry on the host is used instead when it
+    exists.
+  - All zero: a pass stamp `E:\Intelcost\.private\gate-pass\<app|api>-<tree>` keyed to `git write-tree` of the staged
+    index, then (unless `--dry-run`) the commit, after checking the index still writes the same tree.
+  - **The hook refuses a plain `git commit`** in the app or api repo unless a pass stamp at most 24 h old exists for
+    exactly the staged tree; a commit after a failing gate, or after staging something new, is refused. It also
+    refuses `-a`/`--all`, `-i`, `-o` and a pathspec (they commit a tree other than the staged one). Other git verbs
+    that make commits (merge, cherry-pick, revert, rebase) stay under the quiet gate only, as before.
+  - **Infra:** a commit whose staged files touch the QT's inputs (`quantity-table.sh`, `browser/quantity-table.mjs`,
+    `browser/lib/`, `drives/`) needs a QT pass stamp `.private/gate-pass/qt-<key>`, written by a QT that exited 0 with
+    0 FAIL lines; the key (`intelcost-infra/qt-key.sh`) hashes those files' contents as the QT read them and, at
+    commit, as staged. Any other infra commit is not gated (docs, the mirror, reports).
+- **Not changed:** `.claude/settings.json` (the hook already runs on edits and shell calls), permissions, CLAUDE.md
+  (wording proposed in the report).
+
+### D-1367, built and proved (2026-11-26 03:33–04:40 UTC)
+- **Built:** infra ab43266 (`lock.sh`, `qt-key.sh`, `gate-commit.sh`, `quantity-table.sh`, README section); hooks
+  `.claude/hooks/founder-gate.sh` and `founder-gate.js` (outside git, for the close-out's mirror). Locks moved to
+  `E:\Intelcost\.locks\`; the scratchpad `lock.sh` forwards. No app or api change, no migration.
+- **Found while proving:** started as `./quantity-table.sh`, Git Bash runs it through `/usr/bin/env`, and a caller's
+  `wait` reads a signalled run as exit 0 (the script itself exits 143). So an interrupted run also prints a FAIL line,
+  and `grep -c FAIL` catches it whatever the caller reads. The pass line says "no failure lines", so a passing run
+  still counts 0.
+- **Proofs:** five gated actions refused while a QT held the app lock, with a fresh quiet stamp left unspent. A lint
+  error made gate-commit refuse, and the hook refused both a plain commit and the old chained commit of that tree.
+  The app and api dry runs passed (all 0). An infra commit staging the QT was refused without a QT pass. A TERM-killed
+  QT released both locks; a KILL-ed one showed STALE and `clear-stale` freed it. Final QT 04:20:46–04:36:13: exit 0,
+  0 FAIL. Report: `morning-report-2026-11-29/d1367/SECTION.md`.
+
+## D-1368 — Night run 2026-11-29, item 2: wage rules 10. A craft's own row drops a survey line that names one machine; a machine's premium is dropped only when its own survey line is used (D-1365 Q1, Q2/Q3; D-1366)
+
+**The builder's readings, logged before any code (2026-11-26 ~04:50 UTC).**
+- **Wage rules 10.** `WAGE_RULES` 9 -> 10 and `PREMIUM_RULES = 10`, the D-1350/D-1352/D-1359 pattern: every change below
+  is gated on `rules >= 10` in the code path, so a saved set keeps its rules (a recalculation prices it as before) and
+  only a new Calculate or "Update rates" moves it to 10; the source's last line reads "Priced by wage rules 10 (Nov
+  2026)." Open shop only (W14 a-c); prevailing and union read the open-shop figures as their floor (D-1350 B2), so they
+  follow; no WD line that prevailing or union price on changes.
+- **(a) Q1, the craft's own row.** On open shop the class rate of a craft (Equipment Operator, Truck Driver, Laborer,
+  any craft) does not read its WD survey line when that line names exactly one machine, truck type or laborer group
+  (whole names, D-1359): it prices on BLS, the minimum and the blend as with no line; the breakdown says "WD survey
+  line ... names only the scraper: not read for the equipment operator's own rate." A line older than ten years keeps
+  its age sentence (it was not read anyway). Reading taken literally: a shared line naming two or more machines (Utah's
+  "OPERATOR: BACKHOE/EXCAVATOR/TRACKHOE") is not "one machine" and still sets the Equipment Operator's row (question).
+  A machine's class level (the base its premium is added to) is that same craft row, so it drops the line too; D-1359's
+  "another machine's line" rule stays for a shared line that does not name the machine (the Utah dozer).
+- **(b) Q2/Q3, the premium.** A machine's premium is dropped only when its own survey line is used: its own line in the
+  governing WD, at most ten years old at the bid, read as a candidate beside BLS (D-1359's own-line path, no premium:
+  unchanged; it needs market data to be read, else it is not used). Anything else counts as no line and the premium
+  stays (the split pair's ratio, else the company default, excavator +21.5 %). In the split pairs (the county's Heavy
+  then Highway WD, D-1089) a pair whose machine line IS its class line (the same line: the WD's operator line was read
+  as the class line because it names the machine) compares the machine with itself; by rules 10 it is no split and is
+  skipped ("... is the excavator's own line, not a class line: no split."). Likewise a pair whose class line names one
+  machine only (by (a) it is not a class line). A genuine pair (a class line and a different machine line, both recent)
+  still sets the premium by its ratio, 0 % included, as D-1089 (question).
+- **Why Pinal and Yuma differed by rules 9 (read from the WDs, 2026-11-26).** Neither county's governing Heavy WD has
+  an open-shop survey line for the excavator: Pinal's AZ20260060 has survey lines only for the scraper and the
+  compactor/roller (SUAZ2023-010), its excavator lines are union-coded; Yuma's AZ20260062 has its operator survey line
+  for the scraper. So both excavators price on BLS plus the premium. The premium differed: Pinal's Highway WD
+  (AZ20260048) has only union-coded operator lines, so no split pair, so the company default +21.5 % ($41.37); Yuma's
+  Highway WD (AZ20260050) has a 2024 survey line "POWER EQUIPMENT OPERATOR: EXCAVATOR/TRACKHOE" (SUAZ2023-027) that the
+  split read as both the operator's class line and the excavator's line, ratio 0 % ($30.09). Florida's excavators are
+  the same case: the Highway WD's 2024 "OPERATOR: BACKHOE/EXCAVATOR/TRACKHOE" line is both the class line and the
+  excavator's in its pair (0 %), while their own Heavy line (2009) is skipped. By rules 10 all four take the +21.5 %.
+- **The note.** `wages_10`, label "wage rules 10", one row in the api's `WAGE_NOTES` (so in `KNOWN`) and one in the
+  app's `RULE_CHANGES`, its arrival recorded per environment at the api's first start with it (D-1353), no migration. A
+  set moved 9 -> 10 owes "wage rules 10" (D-1360: one note per move, the first key the set had not had). Nothing else in
+  the note logic (D-1369 is next).
+- **Founder data:** every founder current set is open shop and none is rules 9 or 10 (P01, P05, P10 null; P08, Real
+  bid B 6; Real bid A 8): nothing moves now; the Update rates effect (rules 9 vs 10) is reported by a read-only probe.
+- **Proof:** QT rows in a new drive `drives/qt-wages-d1368.py` and its line in `quantity-table.sh` (the D-1359 and
+  D-1361 drives' first rows check their own rules numbers, not `WAGE_RULES`); the 16-ZIP before/after (rules 9 -> 10);
+  founder $ by label; one smoke on a throwaway (Pinal open shop; a Florida excavator). No migration.
+
+### D-1368, built and proved (2026-11-26 05:04–05:45 UTC)
+- **Built:** api 6291faf (`rates.py` `WAGE_RULES` 10, `PREMIUM_RULES`, `_one_named`, `_no_split`; `w14.split_premium`'s
+  `no_split`; `wages_10` in `WAGE_NOTES`, arrival recorded 05:06:46 UTC at the api's start); app 0540768 (`wages_10`,
+  "wage rules 10", in `RULE_CHANGES`); infra ceccd45 (`drives/qt-wages-d1368.py`, 28 rows, its line in
+  `quantity-table.sh`; the D-1359 and D-1361 drives check their own rules numbers). No migration.
+- **QT** 05:19:27–05:35:28 exit 0, 0 FAIL ("wage rules 10 (D-1368): 28 rows, all right"; rules 7, 8, 9 rows right).
+  **Smoke PASS** (throwaway fx.wages.20261126053717, purged 05:44:25): Pinal 85138 Equipment Operator $34.05 on BLS
+  ("names only the scraper: not read"), Scraper $35.82 on its line, Excavator $41.38; Miami 33131 Excavator $35.24
+  (backhoe $29.01 x 1.215).
+- **16 ZIPs (rules 9 -> 10):** Pinal and Yuma Equipment Operator rows down to BLS (35.85 -> 34.07, 35.10 -> 30.09); the
+  Yuma and three Florida excavators up by the +21.5 % (30.09 -> 36.57, 29.03 -> 35.28, 29.19 -> 35.47, 29.37 -> 35.68);
+  nothing else moves (Utah, Ohio, Harris, every truck driver, laborer and pipelayer row the same). Founder: all six
+  current sets identical by 9 and 10 (58 rates each): $0 now, $0 on Update rates. Report:
+  `morning-report-2026-11-29/d1368/SECTION.md`.
+
+## D-1369 — Night run 2026-11-29, item 3: every owed wage note is kept through later moves until it is shown; a machine's own rate counts in the amount (D-1365 Q6, Q7; D-1366)
+
+**The builder's readings, logged before any code (2026-11-26 ~05:55 UTC).** Amends D-1360's "at most one key" and its
+"Not covered" line; one note per move, its key and words stand (the founder's Q4).
+- **Q6, every move not yet shown keeps its note.** The api walks the project's rate sets newest first, as D-1360 does,
+  but no longer stops at the first move: the sets with the same inputs (`SAME_INPUTS`) form runs of equal rules (a
+  re-save is in its run, so it is still skipped); each step from one run to the newer one is a move; a move owes ONE note,
+  under the lowest wage key it crosses (`WAGE_NOTES`, b < N <= c), as D-1360. A set with other inputs ends the walk, as
+  before. A step that crosses no key (null -> 4, 4 -> 6, rules down) owes nothing and the walk goes on. `wage_moves`
+  answers every such move whose key the project has no record of (at most one per key), each with its own before and
+  after rates. "Showing records it": the app records each owed key at the open (the existing `estimate_rule_note` row,
+  first record stands); a recorded key is no longer owed. So order does not matter: Update rates pressed before an open
+  adds a newer move and keeps the older one.
+- **No note counted twice.** Each move's amount is the Full estimate at its after set less the same at its before set
+  (the labour rows that follow the set scaled from the current set's rate to that set's rate); the before set of a move
+  is the after set of the older one, so the amounts add up to the whole chain, each part once. The newest move's after
+  set is the current set: its "after" is the estimate as shown (D-1360's figure, unchanged). The keys of one chain are
+  distinct because wage rules only rise over time (every new set is saved on the current rules); if a chain ever repeats
+  a key (rules went down and up again), the newest move keeps it and the older one is dropped (never twice). No schema
+  change and no migration: the record per (project, key) already says "shown".
+- **The set that stands for a run** is its newest set (the rates the estimate stood on just before the next move);
+  `moved_at` stays the run's first set. On Real bid A (read 05:50 UTC, read only): 257 (blank) -> 270/271 (4) -> 316/534
+  (6) -> 679/680 (8, current); the steps blank -> 4 and 4 -> 6 cross no key; 6 -> 8 owes "wages" (before 534, moved
+  20:25:50), as D-1360 found. After an Update rates (rules 10) before an open it owes two: "wages" (534 -> 680) and
+  "wage rules 9" (680 -> the new set; 8 -> 10 crosses 9 first, D-1360's lowest-key rule). Real bid B and P08: no step
+  crosses a key (4 -> 6, blank -> 6); P01, P05, P10 one set each. No founder project gains an owed note from the walk
+  alone.
+- **Q7, a machine's own rate counts.** The note's pass prices each labour row that follows the set at the rate it takes
+  in each set: an operator or driver row that follows a machine takes its craft's subtype rate for that machine
+  (W3, `subtype_rates`, the machine's subtype from its class key as `labor.py` reads it), a pipelayer or grade checker row
+  its group's subtype rate (the same W3 table), else its craft's rate; the row's scale is (rate in that set) / (rate in the
+  current set), 1 when either is unknown. A foreman takes its crew's top row's scale, as before. The api answers each
+  move's subtype pairs, the current set's rates and subtypes (`wage_now`) and each machine component's subtype
+  (`machines`). Not covered: a rate from a WD role line (`own_lines` from a determination) other than the W3 group, which
+  the sets do not store per role; such a row scales by its craft (as today).
+- **Effect on Real bid A's figure.** Between 534 and 680 the excavator (48.24 -> 48.29), crane (50.86 -> 50.92) and
+  pipelayer (34.52 -> 34.56) subtypes moved by other ratios than their crafts (CC-11 39.73 -> 39.78, CC-16 flat), so by
+  Q7 the "wages" note may differ from D-1360's +$118.26 by the hours of those rows. The smoke reports the figure the app
+  shows now; the D-1360 figure is kept as the craft-only check.
+- **Proof:** a pure drive `drives/qt-rulenote-d1369.py` (the chain walk through `rule_notes.wage_move_chain`: 6 -> 8 -> 10
+  and 6 -> 8 -> 9 with no open owe both notes, a recorded key not owed, a re-save skipped, other inputs end the walk, Real
+  bid A's stored chain read only with a rules 10 set appended) and its line in `quantity-table.sh`; rows in
+  `equipment-cases.mjs` (two keys owed, a recorded one not, a machine-only move's amount). D-1360's drive keeps its rows
+  (`wage_move` is the newest move of the chain). Smoke on a throwaway copy of Real bid A: Update rates before the first
+  open, then open Estimating.
+
+### D-1369, built and proved (2026-11-26 05:58–06:48 UTC)
+- **Built:** api 245b118 (`rule_notes.wage_move_chain`; `wage_moves` answers every move not yet recorded with its own
+  rates, the subtype pairs, `wage_now`, `machines`; `wage_move` is the chain's newest), app a2f7144 (each owed note's own
+  amount, the after set priced for a move that is not the newest; rows at their subtype or group rate), infra 635d910
+  (`drives/qt-rulenote-d1369.py`, 13 rows, its line in `quantity-table.sh`; 5 equipment rows). No migration.
+- **QT** 06:07–06:27:42 exit 0, 0 FAIL. **Smoke PASS** on a copy of Real bid A with Update rates before the first open:
+  "wages +$116.12" and "wage rules 9 +$2,119.54" both shown, Dismiss per person. Founder figure (a second copy, no
+  Update rates): Real bid A "wages" **+$116.11** (by Q7; +$118.26 was craft-only). Report:
+  `morning-report-2026-11-29/d1369/SECTION.md`.
+
+**Close-out of the night run 2026-11-29 (D-1366), 2026-11-26 07:05–07:4x UTC.** Nothing came in from origin/umer-dev or
+origin/staging (no merge). No migration tonight: the head stays `d1362c5f8a14` (one head, pushed). Gates through
+D-1367's helper, `./gate-commit.sh app|api --owner closeout --dry-run`: app lint (0 errors, the 4 known warnings),
+typecheck, build exit 0 (07:06–07:15); api ruff check, ruff format --check, mypy, one alembic head exit 0 (07:15:58–
+07:16:21, its own quiet check). Full QT `QT_OWNER=closeout` 07:16:37–07:33:10, alone, exit 0, 0 FAIL (it took and
+released heavy and app itself). Client and book names 0 in every changed file, the commit messages, DECISIONS, the two
+hook files and the report folder; no file of `.private\` or `.locks\` in any repo or the mirror. D-1370 (item 4, read
+only, no commit): P01 −$8.47 and P08 +$16,243.42 exact on throwaway copies; P10 and Real bid B blocked because they are
+not in the guard list's `copy_sources`; the builder's edit of the list was refused by the permission check and is not
+to be retried by any agent (the founder adds them himself for one run, or not). CLAUDE.md not edited: D-1367's wording
+proposal waits for the founder. FEATURES (no Live moves), MANAGER (In Progress rows D-1367 to D-1370), SINCE_ARCHIVE
+updated; mirror refreshed with the two changed hook files. Throwaways: none left (0 fx accounts or workspaces made
+tonight, 0 BENCH DUPs; dry runs "would purge 0" and "to delete 0; refused 58"). Digest 49f90aa6775fddaa at start and
+end. One push per repo.

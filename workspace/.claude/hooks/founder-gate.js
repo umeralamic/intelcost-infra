@@ -1,7 +1,8 @@
 // The decision half of founder-gate.sh (D-1266). Reads the PreToolUse call (JSON) on stdin and prints what it
 // would touch that the gate covers ("a save to <path>", "a bench migration (...)", "git <sub> in <repo>"), or
 // nothing when the call is not gated. Prints "?" when it cannot read the call; the shell half then falls back to
-// a plain pattern check. Data in, text out: it never blocks by itself.
+// a plain pattern check. Data in, text out: it never blocks by itself. After that first line, one line per
+// `git commit` in the app, api or infra repo (D-1367, commitsOf below), for the shell half's pass-stamp check.
 //
 // Gated:
 //   - Edit, Write, MultiEdit, NotebookEdit on app or api source (APP and API below).
@@ -44,7 +45,9 @@ process.stdin.on("end", () => {
   }
   try {
     const what = decide(call);
-    if (what) process.stdout.write(what);
+    // Line 1: the gated action (or nothing). Then one line per git commit (D-1367).
+    const extra = commitsOf(call);
+    if (what || extra.length) process.stdout.write([what, ...extra].join("\n"));
   } catch {
     process.stdout.write("?");
   }
@@ -303,6 +306,88 @@ function writes(cmd, cwd) {
   ];
   for (const re of inline)
     for (const r of cmd.matchAll(re)) if (gated(resolve(base, r[1]))) return `a save to ${r[1]}`;
+  return "";
+}
+
+// ---- git commit in the app, api or infra repo (D-1367) ---------------------------------------------------
+
+// One line per `git commit` the command runs in one of the three repos:
+//   COMMIT\t<app|api|infra>\t<dir>     the shell half checks the pass stamp for the staged tree
+//   COMMITBAD\t<app|api|infra>\t<why>  a commit of a tree other than the staged one (-a, -i, -o, a pathspec)
+const INFRA = /(^|\/)intelcost-infra(\/|$)/;
+function commitsOf(call) {
+  const tool = String(call.tool_name || "");
+  if (!/^(Bash|PowerShell)$/.test(tool)) return [];
+  const cmd = String((call.tool_input || {}).command ?? "");
+  if (!/\bcommit\b/.test(cmd)) return [];
+  const out = [];
+  let base = call.cwd ? norm(call.cwd) : "";
+  for (const line of stripHeredocs(cmd)) {
+    for (const seg of splitSegments(line)) {
+      const w = words(seg.replace(/^[\s(`]+/, ""));
+      while (w.length && /^\w+=/.test(w[0])) w.shift();
+      if (!w.length) continue;
+      const head = w[0].toLowerCase().replace(/\.exe$/, "");
+      const args = w.slice(1);
+      if (/^(cd|pushd|chdir|set-location|sl)$/.test(head)) {
+        const plain = args.filter((a) => !a.startsWith("-"));
+        if (plain[0]) base = resolve(base, plain[0]);
+        continue;
+      }
+      if (head !== "git") continue;
+      let dir = base;
+      let i = 0;
+      for (; i < args.length; i++) {
+        const a = args[i];
+        if (a === "-C" && args[i + 1]) {
+          dir = resolve(dir, args[++i]);
+          continue;
+        }
+        if (a === "-c" || a === "--git-dir" || a === "--work-tree") {
+          i++;
+          continue;
+        }
+        if (a.startsWith("-")) continue;
+        break;
+      }
+      if ((args[i] || "").toLowerCase() !== "commit") continue;
+      const m = dir.match(/intelcost-app-(react|fastapi)|intelcost-infra/);
+      if (!m || !(REPO.test(dir) || INFRA.test(dir))) continue;
+      const kind = m[0] === "intelcost-app-react" ? "app" : m[0] === "intelcost-app-fastapi" ? "api" : "infra";
+      const why = commitTreeOther(args.slice(i + 1));
+      out.push(why ? `COMMITBAD\t${kind}\t${why}` : `COMMIT\t${kind}\t${dir}`);
+    }
+  }
+  return out;
+}
+
+// Why a commit's options would record a tree other than the staged index, or "".
+function commitTreeOther(rest) {
+  const LONG_VALUE =
+    /^--(message|file|reuse-message|reedit-message|fixup|squash|author|date|template|cleanup|trailer|untracked-files)$/;
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i];
+    if (a === "--") return rest.length > i + 1 ? "a pathspec after --" : "";
+    if (/^--(all|include|only)$/.test(a)) return a;
+    if (/^--pathspec-from-file\b/.test(a)) return "--pathspec-from-file";
+    if (a.startsWith("--")) {
+      if (!a.includes("=") && LONG_VALUE.test(a)) i++;
+      continue;
+    }
+    if (a.startsWith("-") && a.length > 1) {
+      // A cluster of short options: -am "msg" is -a -m "msg"; -m, -F, -C, -c, -t take the rest or the next word.
+      for (let k = 1; k < a.length; k++) {
+        const c = a[k];
+        if ("aio".includes(c)) return `-${c}`;
+        if ("mFCct".includes(c)) {
+          if (k === a.length - 1) i++;
+          break;
+        }
+      }
+      continue;
+    }
+    return `a pathspec (${a})`;
+  }
   return "";
 }
 
