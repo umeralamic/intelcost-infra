@@ -498,6 +498,114 @@ export const EQUIPMENT_CASES = [
     },
     expect: { amounts: [2], total: 2 },
   },
+  // D-1375 part b (the founder's D-1378 1): the foreman priced from the stored rows. P08's two crews (D-1376), 100 h each:
+  //   the operator 39.25 -> 42.61 and its foreman, 15 % (the set's): before 39.25 x 1.15 = 45.1375 -> 45.14, now 49.00; the
+  //   excavator operator (its subtype 47.66 -> 51.74) and its foreman 54.81 -> 59.50. (3.36 + 3.86 + 4.08 + 4.69) x 100 =
+  //   +$1,599.00. (By the old top-row ratio the foremen were 45.1361 and 54.8083: +$1,599.56, the $1.41 kind of gap.) The
+  //   move crossed "wages" and no rule changed a figure: "Rates updated", the whole move (D-1371 Q4b).
+  {
+    id: "rule-note-d1375b-foreman-stored",
+    kind: "rule-note",
+    wagePass: {
+      hours: 100,
+      components: [
+        { crew: [{ role: "Operator", count: 1, hourly_wage: 42.61, craft_code: "CC-11", rate_source: "wage_set" }, { role: "Foreman", count: 1, hourly_wage: 49, craft_code: "CC-11", rate_source: "wage_set", foreman: true }] },
+        { crew: [{ role: "Excavator operator", count: 1, hourly_wage: 51.74, craft_code: "CC-11", rate_source: "wage_set", for_equipment: "m1" }, { role: "Foreman", count: 1, hourly_wage: 59.5, craft_code: "CC-11", rate_source: "wage_set", foreman: true }] },
+      ],
+      context: { now: { rates: { "CC-11": 42.61, "CC-16": 38.52 }, subtypes: { "CC-11": { excavator: 51.74 } }, derived: { premium: 0.15, laborer: 38.52, determination: null, roleLines: {} } }, machines: { m1: "excavator" } },
+      moves: [
+        {
+          key: "wages",
+          movedAt: "2026-11-26T15:00:52Z",
+          rates: { "CC-11": [39.25, 42.61], "CC-16": [32.37, 38.52] },
+          subtypes: { "CC-11": { excavator: [47.66, 51.74] } },
+          current: true,
+          derived: [{ premium: 0.15, laborer: 32.37, determination: null, roleLines: {} }, { premium: 0.15, laborer: 38.52, determination: null, roleLines: {} }],
+          ruleEffect: false,
+        },
+      ],
+    },
+    expect: { amounts: [1599], total: 1599, parts: [0], lines: [["Rates updated (escalation/data, Nov 26, 2026): this estimate changed by +$1,599.00"]] },
+  },
+  // D-1375 part b: the foreman's top row is chosen in each set. The crane (44.62 -> 37.83) out-earned the operator (39.25 ->
+  //   42.61) before: the foreman was 44.62 x 1.15 = 51.313 -> 51.31, now 42.61 x 1.15 = 49.00. 10 h: (-6.79 + 3.36 - 2.31)
+  //   x 10 = -$57.40 (the old top-row ratio took the operator's: 45.14, +$4.80 instead of the foreman's -$23.10).
+  {
+    id: "rule-note-d1375b-foreman-top-changes",
+    kind: "rule-note",
+    wagePass: {
+      hours: 10,
+      components: [{ crew: [{ role: "Crane operator", count: 1, hourly_wage: 37.83, craft_code: "CC-07", rate_source: "wage_set" }, { role: "Operator", count: 1, hourly_wage: 42.61, craft_code: "CC-11", rate_source: "wage_set" }, { role: "Foreman", count: 1, hourly_wage: 49, craft_code: "CC-11", rate_source: "wage_set", foreman: true }] }],
+      context: { now: { rates: { "CC-07": 37.83, "CC-11": 42.61 }, derived: { premium: 0.15, laborer: null, determination: null, roleLines: {} } }, machines: {} },
+      moves: [{ key: "wages", movedAt: "2026-11-26T15:00:52Z", rates: { "CC-07": [44.62, 37.83], "CC-11": [39.25, 42.61] }, current: true, derived: [{ premium: 0.15, laborer: null, determination: null, roleLines: {} }, { premium: 0.15, laborer: null, determination: null, roleLines: {} }], ruleEffect: false }],
+    },
+    expect: { amounts: [-57.4], total: -57.4 },
+  },
+  // D-1375 part b: a foreman with no other craft is paid over the set's Laborer (10 %): 33.52 -> 36.872 -> 36.87 before,
+  //   33.57 -> 36.927 -> 36.93 now; 10 h: +$0.60 (the old pass scaled it by 1: $0).
+  {
+    id: "rule-note-d1375b-foreman-alone",
+    kind: "rule-note",
+    wagePass: {
+      hours: 10,
+      components: [{ crew: [{ role: "Foreman", count: 1, hourly_wage: 36.93, craft_code: "CC-16", rate_source: "wage_set", foreman: true }] }],
+      context: { now: { rates: { "CC-16": 33.57 }, derived: { premium: 0.1, laborer: 33.57, determination: null, roleLines: {} } }, machines: {} },
+      moves: [{ movedAt: "2026-11-26T15:00:52Z", rates: { "CC-16": [33.52, 33.57] }, current: true, derived: [{ premium: 0.1, laborer: 33.52, determination: null, roleLines: {} }, { premium: 0.1, laborer: 33.57, determination: null, roleLines: {} }] }],
+    },
+    expect: { amounts: [0.6], total: 0.6 },
+  },
+  // D-1375 part b (the founder's D-1371 Q4b): the note named by its cause. An operator, 100 h. A rule-only move: Davis
+  //   84041's Equipment Operator by rules 10 (33.25) and 11 (32.64), D-1374, no escalation: the after set less the rule's
+  //   own change is the before set, so the rule carries the whole -$61.00. A mixed move: a day's escalation too (after
+  //   32.70; without the rule 32.70 + 0.61 = 33.31): the rule -$61.00, "Rates updated" +$6.00, together -$55.00 (the real
+  //   move). A pure escalation move that crossed the wages_11 key (32.64 -> 32.70): "Rates updated" +$6.00, the rule $0.
+  //   A move whose inputs could not be priced again (the api answers no cause): the rule's name, the whole amount.
+  ...[
+    ["rule-only", 32.64, [33.25, 32.64], { ruleEffect: true, withoutRule: { rates: { "CC-11": 33.25 } } }, { amounts: [-61], parts: [-61], lines: [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by −$61.00"]] }],
+    ["mixed", 32.7, [33.25, 32.7], { ruleEffect: true, withoutRule: { rates: { "CC-11": 33.31 } } }, { amounts: [-55], parts: [-61], lines: [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by −$61.00", "Rates updated (escalation/data, Nov 26, 2026): this estimate changed by +$6.00"]] }],
+    ["escalation-only", 32.7, [32.64, 32.7], { ruleEffect: false }, { amounts: [6], parts: [0], lines: [["Rates updated (escalation/data, Nov 26, 2026): this estimate changed by +$6.00"]] }],
+    ["cause-not-known", 32.7, [32.64, 32.7], {}, { amounts: [6], parts: [null], lines: [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by +$6.00"]] }],
+  ].map(([name, now, pair, cause, expect]) => ({
+    id: `rule-note-d1375b-${name}`,
+    kind: "rule-note",
+    wagePass: {
+      hours: 100,
+      components: [{ crew: [{ role: "Operator", count: 1, hourly_wage: now, craft_code: "CC-11", rate_source: "wage_set" }] }],
+      context: { now: { rates: { "CC-11": now } }, machines: {} },
+      moves: [{ key: "wages_11", movedAt: "2026-11-26T16:00:00Z", rates: { "CC-11": pair }, current: true, ...cause }],
+    },
+    expect,
+  })),
+  // D-1375 part b: a recorded note's lines. Real bid A's owed "wages" (534 -> 680, rules 6 -> 8): rules 6 and 8 price set
+  //   680's inputs identically (read only, 2026-11-26 16:42 UTC), so it reads "Rates updated" with its +$116.11 (D-1369's
+  //   figure, D-1375a: the move is escalation). P08's copy (D-1376's +$14,330.61, Update rates on the copy 2026-11-26). A
+  //   record made before (no moved_at): as it always was. Mixed: two lines, adding to the move. A rule's part of the whole
+  //   move: one line. No cause known (rule_delta null): the rule's name, the whole amount.
+  {
+    id: "rule-note-d1375b-recorded-lines",
+    kind: "rule-note",
+    lines: [
+      [{ key: "wages", delta: 116.11, rule_delta: 0, moved_at: "2026-11-25T20:25:50.53153Z", shown_at: "2026-11-26T17:00:00Z" }],
+      [{ key: "wages", delta: 14330.61, rule_delta: 0, moved_at: "2026-11-26T17:05:00Z", shown_at: "2026-11-26T17:06:00Z" }],
+      [{ key: "wages", delta: -8.47, shown_at: "2026-11-26T09:00:00Z" }],
+      [{ key: "wages_11", delta: -55, rule_delta: -61, moved_at: "2026-11-26T16:00:00Z", shown_at: "2026-11-26T16:10:00Z" }],
+      [{ key: "wages_11", delta: -61, rule_delta: -61, moved_at: "2026-11-26T16:00:00Z", shown_at: "2026-11-26T16:10:00Z" }],
+      [{ key: "wages_11", delta: 6, rule_delta: null, moved_at: "2026-11-26T16:00:00Z", shown_at: "2026-11-26T16:10:00Z" }],
+    ],
+    expect: {
+      lines: [
+        [["Rates updated (escalation/data, Nov 25, 2026): this estimate changed by +$116.11"]],
+        [["Rates updated (escalation/data, Nov 26, 2026): this estimate changed by +$14,330.61"]],
+        [["Pricing rule changed (wages, Nov 25, 2026): this estimate changed by −$8.47"]],
+        [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by −$61.00", "Rates updated (escalation/data, Nov 26, 2026): this estimate changed by +$6.00"]],
+        [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by −$61.00"]],
+        [["Pricing rule changed (wage rules 11, Nov 26, 2026): this estimate changed by +$6.00"]],
+      ],
+    },
+  },
+  // D-1375 part b: the foreman's cent, half to even as the api's `Decimal.quantize` (`drives/qt-rulenote-d1375b.py` checks
+  //   the api's own figures): 39.25 x 1.10 = 43.175 -> 43.18; 39.35 x 1.10 = 43.285 -> 43.28; 45.14; 54.81; 49.00.
+  { id: "rule-note-d1375b-cents", kind: "rule-note", cents: [[39.25, 1.1], [39.35, 1.1], [39.25, 1.15], [47.66, 1.15], [42.61, 1.15]], expect: { cents: [43.18, 43.28, 45.14, 54.81, 49] } },
   // D-1353 (the founder's Q4): Needs attention lists a record until it is dismissed, at every open; $0 never shows.
   //   P10's expected rental note (D-1345: rent −$5,711.29 + its 12 % waiver), then dismissed, then a $0 record, then the
   //   P01-copy wages note of D-1350's smoke (−$8.47).
@@ -895,11 +1003,17 @@ export async function runEquipment(page, eqlib) {
           if (c.wagePass) {
             const { hours, components, context, moves } = c.wagePass;
             const cost = (comps) => comps.reduce((t, comp) => t + comp.crew.reduce((u, r) => u + Number(r.hourly_wage) * Number(r.count) * hours, 0), 0);
-            const amounts = moves.map((m) => rc.ruleDelta(cost(m.current === false ? rc.wagesBeforeComponents(components, m, context, 1) : components), cost(rc.wagesBeforeComponents(components, m, context, 0))));
-            return { amounts, total: rc.ruleDelta(amounts.reduce((t, a) => t + a, 0), 0) };
+            const after = (m) => cost(m.current === false ? rc.wagesBeforeComponents(components, m, context, 1) : components);
+            const amounts = moves.map((m) => rc.ruleDelta(after(m), cost(rc.wagesBeforeComponents(components, m, context, 0))));
+            // D-1375 part b: each move's rule part (`rulePart`) and the note's lines by cause, as the open records them.
+            const parts = moves.map((m) => rc.rulePart(m, after(m), () => cost(rc.wagesBeforeComponents(components, m, context, "rule"))));
+            const lines = moves.map((m, i) => (m.key ? rc.ruleNoteLines(rc.RULE_CHANGES.find((x) => x.key === m.key), { delta: amounts[i], rule_delta: parts[i], moved_at: m.movedAt }, "USD") : null));
+            return { amounts, total: rc.ruleDelta(amounts.reduce((t, a) => t + a, 0), 0), parts, lines };
           }
-          // D-1353: the notes Needs attention lists, and the rental line's words.
+          // D-1353: the notes Needs attention lists, and the rental line's words. D-1375 part b: each note's own lines.
           if (c.shown) return { shown: c.shown.map((records) => rc.notesShown(records, "USD").map((n) => n.text)) };
+          if (c.lines) return { lines: c.lines.map((records) => rc.notesShown(records, "USD").map((n) => n.lines)) };
+          if (c.cents) return { cents: c.cents.map(([amount, factor]) => rc.timesToCent(amount, factor)) };
           if (c.rentLabels) return { rentLabels: c.rentLabels.map(([d, start]) => periods.rentLabel(periods.solveRental({ day: 1040, week: 2927, fourWeek: 7950 }, d, d * 8, undefined, start ? { startWeekday: periods.weekdayOf(start) } : {}))) };
           if (c.texts) return { texts: c.texts.map((d) => rc.ruleNoteText(rc.RULE_CHANGES[0], d, "USD")) };
           return { deltas: c.deltas.map(([a, b]) => rc.ruleDelta(a, b)) };
