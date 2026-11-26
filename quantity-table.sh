@@ -10,7 +10,15 @@
 # estimate, holds, settlement, refunds, the minimum and rounding (D-236). Then the scale undo rows
 # (browser/lib/scale-undo-cases.mjs, D-642): undo and redo of a scale give every figure back bit for bit. Takes seconds; needs the bench's app and api up.
 #
-#   ./quantity-table.sh      (from intelcost-infra/)
+#   ./quantity-table.sh                       (from intelcost-infra/)
+#   QT_OWNER=D-1368 ./quantity-table.sh       (the locks under your D-number; adopted if you already hold them)
+#
+# D-1367: the run takes the heavy and app locks itself (lock.sh, E:\Intelcost\.locks\) before its first step and
+# drops them on exit, a failure or an interrupt included (a lock its owner already held is adopted and left held).
+# While it runs, the founder gate hook refuses every app or api save. A held lock is waited on up to QT_LOCK_WAIT
+# seconds (default 3600). A run killed outright leaves its marks STALE: `./lock.sh status` shows it and the next
+# acquire or `./lock.sh clear-stale` removes it. Its output is kept: any FAIL line turns exit 0 into exit 1. A run
+# that exits 0 writes the QT pass stamp an infra commit touching the QT's inputs needs (qt-key.sh).
 
 set -u
 cd "$(dirname "$0")"
@@ -18,7 +26,51 @@ cd "$(dirname "$0")"
 QT_RUN="qt-run.$$.$(date +%s)"
 QT="browser/.$QT_RUN"
 mkdir -p "$QT"
-trap 'rm -rf "$QT"' EXIT
+QT_OWNER="${QT_OWNER:-qt-$$}"
+QT_HELD=()
+QT_START="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+QT_TEE=''
+# Back to the terminal, and wait until tee has written its last line.
+qt_untee() {
+  [ -n "$QT_TEE" ] || return 0
+  exec 1>&3 2>&4
+  wait "$QT_TEE" 2>/dev/null
+  local n=0
+  while [ -d "/proc/$QT_TEE" ] && [ "$n" -lt 50 ]; do sleep 0.1; n=$((n + 1)); done
+  QT_TEE=''
+}
+qt_exit() {
+  local rc=$? i
+  # A signal's own code wins (an interrupted run never reads as exit 0).
+  [ -n "$QT_SIG" ] && rc="$QT_SIG"
+  qt_untee
+  for ((i = ${#QT_HELD[@]} - 1; i >= 0; i--)); do
+    echo "lock: $(bash ./lock.sh qt-drop "${QT_HELD[$i]}" "$QT_OWNER" $$)"
+  done
+  # Started as ./quantity-table.sh, Git Bash runs it through /usr/bin/env, and a caller's `wait` can read a signalled
+  # run as exit 0; this line makes `grep -c FAIL` count it whatever the caller reads. No pass stamp is written.
+  [ -n "$QT_SIG" ] && echo "FAIL  the quantity table was interrupted (signal, exit $rc): its rows did not all run"
+  rm -rf "$QT"
+  exit "$rc"
+}
+QT_SIG=''
+trap qt_exit EXIT
+trap 'QT_SIG=130; exit 130' INT
+trap 'QT_SIG=143; exit 143' TERM
+trap 'QT_SIG=129; exit 129' HUP
+for l in heavy app; do
+  out=$(bash ./lock.sh qt-hold "$l" "$QT_OWNER" $$ "${QT_LOCK_WAIT:-3600}") || {
+    echo "FAIL  the quantity table could not take the $l lock: $out"
+    exit 1
+  }
+  QT_HELD+=("$l")
+  echo "lock: $out ($QT_OWNER, QT pid $$)"
+done
+QT_KEY0="$(bash ./qt-key.sh --worktree)"
+# Every line also goes to $QT/out.txt, read for FAIL lines at the end.
+exec 3>&1 4>&2
+exec > >(tee "$QT/out.txt") 2>&1
+QT_TEE=$!
 
 # Hard rule 2: takeoff-core carries no React import and no network call.
 # The equipment library's engine is held to the same rule (F33, plan §3.1).
@@ -136,6 +188,8 @@ docker compose exec -T postgres psql -U intelcost -d intelcost -At -c "select js
   'line_map', (select json_agg(l order by l.seq) from eqlib.ew_line_map l))" >$QT/eqlib.json
 
 docker compose --profile browser run --rm -e QT_RUN="$QT_RUN" -e GEN=1 browser node scripts/quantity-table.mjs 2>&1 | grep -v '^ *Container '
+GEN_STATUS="${PIPESTATUS[0]}"
+[ "$GEN_STATUS" -eq 0 ] || { echo "FAIL  GEN exited $GEN_STATUS"; exit 1; }
 [ -s $QT/cases.json ] || { echo "FAIL  GEN wrote no cases"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py" \
   <$QT/cases.json >$QT/python.json || { echo "FAIL  the api's engine did not read the table"; exit 1; }
@@ -251,5 +305,25 @@ if [ -f "$BENCH_A" ]; then
   node -e 'const c = require(process.argv[1]); console.log(`Benchmark A: ${c.lines} lines, ${c.wrong.length ? "WRONG (" + c.wrong.length + " figures)" : "right"} (checked ${c.checked_at.slice(0, 16)}Z)`); process.exit(c.wrong.length ? 1 : 0)' "$(cd "$(dirname "$BENCH_A")" && (pwd -W 2>/dev/null || pwd))/last-check.json" || STATUS=1
 else
   echo "Benchmark A: skipped (no local expectations)"
+fi
+# D-1367: the exit code and the FAIL lines agree, and a pass leaves its stamp for an infra commit.
+qt_untee
+FAILS="$(grep -c FAIL "$QT/out.txt")"
+if [ "$STATUS" -eq 0 ] && [ "$FAILS" -gt 0 ]; then
+  echo "FAIL  the run exited 0 but printed $FAILS FAIL lines (above)"
+  STATUS=1
+fi
+if [ "$STATUS" -eq 0 ]; then
+  QT_KEY1="$(bash ./qt-key.sh --worktree)"
+  if [ "$QT_KEY1" = "$QT_KEY0" ]; then
+    PASS_DIR="$(cd .. && pwd)/.private/gate-pass"
+    mkdir -p "$PASS_DIR"
+    printf 'QT pass %s to %s, owner %s, pid %s, QT_SKIP_PREPARE=%s, 0 FAIL\n' "$QT_START" \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$QT_OWNER" $$ "${QT_SKIP_PREPARE:-0}" >"$PASS_DIR/qt-$QT_KEY1"
+    # Worded without the word the FAIL count reads.
+    echo "QT pass stamp: qt-${QT_KEY1:0:12} (exit 0, no failure lines)"
+  else
+    echo "QT inputs changed during the run: no pass stamp (run it again for an infra commit)"
+  fi
 fi
 exit "$STATUS"

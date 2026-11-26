@@ -242,9 +242,9 @@ Only one dev server can own port 3000. Stop a host `npm run dev` in
 
 ## After each block (D-68)
 
-1. **The gates.** `npm run lint && npm run typecheck && npm run build` in the app;
-   `poetry run ruff check . && poetry run mypy app` in the api.
-2. **The shared quantity table**, `./quantity-table.sh`: hard rule 2's purity check on
+1. **The gates.** Through `./gate-commit.sh app|api` (below, D-1367): the app's lint, typecheck and build; the
+   api's ruff check, ruff format --check, mypy and one alembic head.
+2. **The shared quantity table**, `QT_OWNER=D-NNNN ./quantity-table.sh`: hard rule 2's purity check on
    `lib/takeoff`, then every row of `browser/lib/quantity-cases.mjs` through the api's engine
    and the browser's, equal to 1e-9 and to the answers worked by hand. About 30 s.
 3. **One throwaway smoke check.** A Playwright script written for the block in `browser/`
@@ -256,6 +256,44 @@ Only one dev server can own port 3000. Stop a host `npm run dev` in
 Waits are on page state, never a clock: `enterWorkspace`, `shellSettled`, `pageSettled`
 and `sheetPoint` (a point on the sheet checked to be in the window). `quietFor` only to
 prove something does not happen.
+
+## Locks, the quantity table and gate-commit (D-1367)
+
+The tools refuse what the rules used to only state (the founder's D-1365).
+
+**Locks.** `./lock.sh acquire|release <lock> <owner> [wait-s]`, `./lock.sh status`, `./lock.sh clear-stale [<lock>]`.
+Locks heavy, app, api, mcp (taken in that order); owner a D-number. They live in `E:\Intelcost\.locks\` (outside every
+repo and the mirror; `INTELCOST_LOCKS` overrides it) with their log, `locks.log`.
+
+**The quantity table holds heavy and app itself** for its whole run, and drops them on exit (an EXIT trap; an
+interrupt or a failure exits through it). `QT_OWNER=D-NNNN` names the owner (default `qt-<pid>`); a lock that owner
+already holds is adopted and left held. A lock someone else holds is waited on (`QT_LOCK_WAIT`, default 3600 s). While
+it runs, each lock folder carries its process marks (`qt.pid`, `qt.winpid`, `qt.since`), and the founder gate hook
+(`.claude/hooks/founder-gate.sh`) refuses every app or api save, bench migration, git checkout/pull/stash/merge in those
+repos and docker exec/cp/run into or of an app or api container, whatever the quiet stamp says. A QT killed outright
+(no trap) leaves marks whose process is gone: `status` shows them STALE, and `clear-stale` or the next `acquire`
+removes them. Nothing kills a process. The QT also reads its own output: a FAIL line turns exit 0 into exit 1. A run
+that exits 0 writes a pass stamp `E:\Intelcost\.private\gate-pass\qt-<key>`, the key being `./qt-key.sh --worktree`
+(the QT's inputs: `quantity-table.sh`, `browser/quantity-table.mjs`, `browser/lib/`, `drives/`).
+
+**Commits in the app and api go through `./gate-commit.sh`:**
+
+```bash
+./gate-commit.sh app --owner D-NNNN -m "D-NNNN (app): ..." -m "Co-Authored-By: ..."
+./gate-commit.sh api --owner D-NNNN -F message.txt
+./gate-commit.sh app --owner D-NNNN --dry-run      # the gates and the stamp, no commit
+```
+
+Stage by name first. It refuses a branch other than `umer-dev`, unstaged changes to tracked files, untracked files
+that are not ignored, an empty index (but for `--dry-run`) and a running QT; holds heavy; runs the app's
+`npm run lint`, `npm run typecheck`, `npm run build` on the host, or the api's `ruff check .`, `ruff format --check .`,
+`mypy app`, `alembic heads` (exactly one) in the api container after its own `founder-active.sh` quiet (poetry on the
+host when present), each exit code read; the first non-zero stops it. All 0: the pass stamp
+`.private\gate-pass\<app|api>-<git write-tree>`, then the commit.
+
+The hook refuses a plain `git commit` in the app or api repo unless such a stamp (at most 24 h old) exists for exactly
+the staged tree, and refuses `-a`, `-i`, `-o` and a pathspec there. An infra commit that stages a QT input needs the QT
+pass stamp for exactly the staged files (`./qt-key.sh --index`); other infra commits are not gated.
 
 ## The fixture suite, archived
 
