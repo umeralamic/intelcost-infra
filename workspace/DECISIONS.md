@@ -37777,3 +37777,36 @@ proposal waits for the founder. FEATURES (no Live moves), MANAGER (In Progress r
 updated; mirror refreshed with the two changed hook files. Throwaways: none left (0 fx accounts or workspaces made
 tonight, 0 BENCH DUPs; dry runs "would purge 0" and "to delete 0; refused 58"). Digest 49f90aa6775fddaa at start and
 end. One push per repo.
+
+## D-1371 — The founder's answers to REPORT_2026-11-29 (for the next run)
+
+Given 2026-11-26 after the 11-29 close-out. Binding for the next run; queue in
+`intelcost-infra/morning-report-2026-11-29/NEXT-RUN.md`.
+
+- **Q1 (D-1368 Q1): yes.** A craft's own row (Equipment Operator, Truck Driver, Laborer) drops any survey line that
+  names machines, one or several. Utah's "backhoe/excavator/trackhoe" line no longer sets its Equipment Operator; that
+  row prices on BLS. Proof includes the 16-ZIP before/after table.
+- **Q2 (D-1368 Q2): keep a real pair's ratio, 0 % included.** A real split pair is local evidence; no company default
+  replaces it.
+- **Q3 (D-1369 Q1): right.** Real bid A owes +$116.11 (machine rates counted).
+- **Q4 (D-1369 Q2): explain, then name the note by its cause.** (a) Escalation moves about 0.01 % a day, so a ~1.5 %
+  rise in one day (every craft on Real bid A, 11-25 20:27 to 11-26) is a step: find it (index value, a data reload, the
+  bid date) and report it. (b) A rule move's note is named by what moved the figure: "Rates updated (escalation/data,
+  <date>)" when no rule changed it; a rule's name only when a rule did. Notes still carry no D-numbers.
+- **Q5 (D-1369 Q3): 1 cent of rounding is OK.**
+- **Q6 (D-1370 Q2): break P08 down before anyone presses Update rates.** Split P08's +$16,243.42 by cause (escalation;
+  the BLS source change, national to Ohio statewide; any rule), per craft. Then price P08 again with Gallia on BLS's
+  Southern Ohio nonmetropolitan area instead of the statewide figure and report that total. Read only on the founder's
+  project; throwaway copy for any priced figure.
+- **Q7 (D-1367 Q1): gates must pass before ANY push, merges included.** Merges, cherry-picks, reverts and rebases in
+  app or api need a gate pass on the tree being pushed; enforced, proved by a deliberate attempt.
+- **Q8 (D-1367 Q2): fine.** The pass stays tied to the exact tree (24 h).
+- **Q9 (D-1367 Q3): yes.** Changes to `.claude/hooks/` and `lock.sh` need a QT pass plus a deliberate-attempt proof
+  before they are committed (mirror included).
+- **CLAUDE.md:** D-1367's proposed wording applied by the main session (hard rule 12 bullet; "Proving work is done"
+  gate lines now `gate-commit.sh --dry-run`).
+- **Q10 (D-1370 Q1): yes, for the next run only (the founder revised a first "no" the same day).** The main session
+  (never a builder, never a workaround) adds P10's and Real bid B's ids to the guard list's `copy_sources` through the
+  normal permission prompt to the founder, showing the list's `copy_sources` before and after (ids and labels only).
+  The copies are read-only throwaways; the founder's projects are never written. Once both copies are purged, the main
+  session removes both ids the same way and shows the list before and after again.

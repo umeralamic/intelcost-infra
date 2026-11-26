@@ -133,6 +133,12 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
      (`curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs` gives 200). A save that lands while the
      api is still reloading can leave it down with only `watchfiles` running (2026-11-13, 16:26 to 16:31 UTC).
      `touch` a watched file under `app/` to bring it back, and report the window.
+   - **Locks and commits are enforced (D-1367).** The quantity table takes the heavy and app locks itself
+     (`QT_OWNER=D-NNNN ./quantity-table.sh`; locks in `E:\Intelcost\.locks\`, `intelcost-infra/lock.sh status`), and
+     while it runs the founder gate hook refuses every app or api save, whatever the quiet stamp says. App and api
+     commits go through `intelcost-infra/gate-commit.sh app|api --owner D-NNNN -m "..."`, which runs the full gates with
+     every exit code read. The hook refuses a plain `git commit` there unless those gates passed on exactly the staged
+     tree, and refuses an infra commit that stages a QT input unless a QT passed on exactly those files.
    - **Report the windows:** every report names each window in which the founder's saves could fail (a reload, a
      code-before-migration gap, a stopped service), with its start and end times in UTC.
 
@@ -194,10 +200,12 @@ A green build is not proof a screen renders. Before calling anything finished:
 ```bash
 # api
 docker compose -f intelcost-infra/docker-compose.yml up -d
-cd intelcost-app-fastapi && poetry run ruff check . && poetry run mypy app
+cd intelcost-infra && ./gate-commit.sh api --owner D-NNNN --dry-run
 # app
-cd intelcost-app-react && npm run lint && npm run typecheck && npm run build
+cd intelcost-infra && ./gate-commit.sh app --owner D-NNNN --dry-run
 ```
+
+Without `--dry-run` (and with `-m "..."`), the same helper commits once every gate has exited 0.
 
 Then bring the stack up and drive the changed screen in a real browser, exercising
 its loading, empty, error and unauthorized states. Delete every screenshot and
