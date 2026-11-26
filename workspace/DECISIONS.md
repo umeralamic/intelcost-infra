@@ -37810,3 +37810,20 @@ Given 2026-11-26 after the 11-29 close-out. Binding for the next run; queue in
   normal permission prompt to the founder, showing the list's `copy_sources` before and after (ids and labels only).
   The copies are read-only throwaways; the founder's projects are never written. Once both copies are purged, the main
   session removes both ids the same way and shows the list before and after again.
+
+## D-1372 — Bid tabs and client inputs under docs/reference stay out of git and the mirror (standing); night run 2026-11-30 brief
+
+Given 2026-11-26. **Standing rule:** `docs/reference/Bid tabs Houston 2026-11`, and anything under `docs/reference/`
+holding bid tabs or client inputs, stays on disk only: never in git, never in `intelcost-infra/workspace/`. The mirror's
+exclusion list is the "Founder reference workbooks" block of `intelcost-infra/.gitignore`; the patterns `Bid tabs*`,
+`*bid tab*`, `*bid-tab*` and `*client input*` (under `workspace/docs/reference/`) were added there. A mirror refresh
+copies around them, and the close-out's exactness check treats them as expected differences. A new reference file that
+looks like a bid tab or client input is asked about, not mirrored.
+
+**Night run 2026-11-30 brief:** run unattended from `morning-report-2026-11-29/NEXT-RUN.md` in its order (D-1371),
+enforcement first, max 2 builders, checkpoint after every item, standing rules as always (commits only through
+`gate-commit.sh`). Items 3 (the cause of the ~1.5 % jump) and 4 (P08's breakdown) report to the founder as soon as each
+is known. Item 5's guard-list edit is made by the main session only, through the permission prompt. Close-out: merge
+origin/staging if anything came in, fold migrations into one, prove, gates, full QT 0 FAIL, client and book scans,
+mirror (bid tabs excluded), purge, fingerprint, one push to umer-dev (including d491d7b). Report in
+`morning-report-2026-11-30`, pricing questions first, with NOTE_FOR_ABDULLAH.md.
