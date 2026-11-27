@@ -38650,3 +38650,96 @@ eacd2a92b3e281e2 at start and end. Open questions in morning-report-2026-12-03/N
 8. **History:** no rewrite now. Revisit before anyone outside the team gets repo access.
 9. **Lockfile-hash narrowing** of the book scan (D-1388): fine.
 10. **Gate stamps:** a gate change voids older pass stamps of its kind.
+
+## D-1398
+### D-1398 — The 12-04 run brief (2026-11-27, logged 17:17 UTC)
+The founder's order: "RUN, unattended, NO time limit, from morning-report-2026-12-03/NEXT-RUN.md (the D-1397 items, in
+order). oesm25nat.zip is placed in E:\Intelcost\test-data-local\wage\bls\. Standing rules as always (hard rules 12–14;
+commits and pushes through the gate helpers; no client or book names; no keys; founder projects read-only; throwaways
+purged). Fingerprint baseline eacd2a92b3e281e2 ... Max 2 builders; checkpoint after every item. Close-out when done:
+merge origin/staging if anything came in, fold migrations, prove, gates, FULL quantity table 0 FAIL, name scans, mirror,
+purge, fingerprint, ONE push per repo (incl. 98f60ce). Short report in morning-report-2026-12-04 with
+NOTE_FOR_ABDULLAH.md. Status to me at the push."
+Items (D-1397's six): builder A, D-1399: (1) BLS card text, (2) QT checks the loaded data's checksum against the export
+file (full file verify only on load/Refresh), (3) verify the 34 national rows against oesm25nat.zip, (4) gzip the BLS data
+file with its checksum. Builder B, D-1400: (5) CSV under docs/reference out of the mirror, (6) a gate change voids older
+pass stamps of its kind. Start 17:16 UTC: digest eacd2a92b3e281e2 = baseline; locks free; app dbfb7a9, api b8750f0,
+market e027fe0 even with origin; infra 98f60ce (1 ahead, the D-1397 mirror); alembic head d1396c4e8a17; wage rules 13.
+
+## D-1399 — Run 2026-12-04, builder A: the founder's D-1397 items 1-4 (BLS card text, QT checks the loaded data's checksum, national rows verified from oesm25nat.zip, the BLS data file gzipped)
+
+**The builder's readings, logged before any code (2026-11-27 ~17:21 UTC).** No BLS or other external call, no download.
+1. **Card text** (`BlsDataCard.tsx`, its text is inline): where this server may call BLS, the line says Refresh first
+   loads from the BLS files placed on the server and calls the BLS API only for what they lack (top-ups), stopping at
+   the daily limit. Without a key: Refresh loads from the placed files (and the bulk folder) only. No D-number shown;
+   no style change (tokens as they are).
+2. **QT:** `drives/qt-bls-d1386.py` no longer parses the published files (row `d1392-file-verify` goes, ~3 minutes).
+   It checks the loaded data instead: each table's count and digest (what `bls_load.py digest` prints) equal the data
+   file's recorded ones, and the file matches its `.sha256` (rows d1386-file-*), and a fresh export is byte-equal
+   (d1392-file-export-checksum). The full file verify stays in `oews-file` and Refresh only.
+3. **National:** `oesm25nat.zip` (inside: `national_M2025_dl.xlsx`, AREA 99, AREA_TYPE 1, cross-industry only) is read
+   by the existing `read_oews_file` as national 0000000 (no parser change needed). Verify first, same rules as D-1392
+   (median and p75 exact, the mean where the row holds one, every file row with a figure loaded). Any difference:
+   stop, write nothing, report. If equal: no row changes; `oews-file` writes one load record when a run verified areas
+   equal and wrote no row: kind oews, rows = the rows compared, source "BLS file oesm25nat.zip: national verified
+   equal, none written" (once: not written again for the same source). Refresh writes no such record.
+4. **Gzip:** the data file becomes `app/wagecalc/seed/bls_refdata.json.gz` (gzip of the same JSON text, level 9,
+   mtime 0, no file name: the same data gives the same bytes) and `bls_refdata.json.gz.sha256` (sha256 of the .gz,
+   `sha256sum` format). `export` and Refresh's re-export write the .gz; `import` checks the sha256 first, then
+   decompresses. The plain .json and its .sha256 leave git. Proof: re-export, the scratch import (scratch database,
+   staging settings, head d1396c4e8a17, import twice, six tables EQUAL to the bench by psql count + md5, dropped).
+
+## D-1400 — Run 2026-12-04, builder B: CSV under docs/reference leaves the mirror; a gate change voids older pass stamps of its kind (D-1397 7 and 10)
+
+**Status:** Accepted (2026-11-27, logged 17:21 UTC before any change, the run's builder B, from the founder's D-1397
+answers 7 and 10). Extends D-1387 (the exclusion list) and D-1367/D-1373/D-1381 (the pass stamps).
+
+- **Item 5, CSV out of the mirror.** The D-1387 block of `intelcost-infra/.gitignore` gains
+  `workspace/docs/reference/**/*.[Cc][Ss][Vv]` (any case, any depth). `workspace-mirror.sh` already skips whatever that
+  file ignores and prints the skips as counts per line, never names; its comment says CSV is now skipped too. The 11
+  tracked CSVs (2 in the folder itself, 9 in one subfolder) leave the index with `git rm --cached` and their mirror
+  copies on disk are deleted from `workspace/` after a `cmp` against the live files; the live files under
+  `E:\Intelcost\docs\reference\` are not touched. Nothing in infra (or app, api, marketing) reads a CSV from
+  `workspace/docs/reference/` (checked by path and by base name before the change). The names scan keeps reading every
+  tracked text file; a tracked CSV under `workspace/docs/reference/` is refused by the infra gate like an office file
+  there (the D-1387 check widened). History keeps the 11 (two commits, already on origin/umer-dev and the tag
+  `tester-candidate-2026-11-13`); the paths are in `.private/d1400-history-csv.txt`. No rewrite (D-1397 8).
+- **Item 6, stamps keyed to the gates.** **Reading:** "a gate change" is a change to the scripts that run or judge a
+  gate: `gate-commit.sh`, `gate-push.sh` and `qt-key.sh` (the infra gate's QT check runs it). One definition,
+  `qt-key.sh --gates`: one hash over those three files as they are on disk in `intelcost-infra/` (each file's blob id
+  beside its name). `gate-commit.sh` writes `gates <hash>` into every app, api, infra and market stamp it makes. A stamp
+  counts only when it is at most 24 h old AND its `gates` field equals the current `qt-key.sh --gates`: in the hook
+  (commit and push checks), in `gate-push.sh` (a void stamp is not reused; the gates run fresh) and in the infra gate's
+  own check. A stamp from before tonight has no field, so every one of them is void at once (the market stamp of
+  12-03 included: its next push runs lint and build again). **QT stamps** are already keyed by name to the QT inputs,
+  which include the three gate scripts, `quantity-table.sh`, `lock.sh`, its drives and the hooks (D-1373): a change to
+  any of them changes the key, so an old QT stamp never matches. That is kept as it is; the QT stamp also records the
+  gates hash for the record. Fail closed: an unreadable gates hash voids every stamp.
+- **Proof:** a deliberate refused attempt in a scratch clone (stamp made, gate script changed, the old stamp refused by
+  the hook and not reused by gate-push), then the real path with fresh gate runs. **Not changed:** `.claude/settings.json`,
+  permissions, app or api source, the client and book lists, history. CLAUDE.md hard rule 12 says stamps carry the gates
+  hash.
+
+## D-1401
+### D-1401 — Laptop sleep, not the internet (2026-11-27, logged 20:49 UTC)
+The founder's correction: the stall in the 12-04 run's joint QT (started 17:58 UTC; it resumed about 20:4x UTC) was the
+laptop sleeping on low battery, not a network outage. Drop the network-outage note. Standing from the next run:
+1. **At run start**, check the laptop is on AC power (Windows battery status). On battery: say so in the first status and
+   checkpoint more often.
+2. **Heartbeat in long jobs** (QT, loads) every minute. A gap over 5 minutes is logged as "laptop slept from X to Y"; after
+   waking, the run re-checks api, worker, worker-pages and beat before going on.
+3. **Tonight's report** (12-04) lists the sleep window and confirms every service came back.
+
+## D-1398 (part b)
+### D-1398 (part b) — Close-out of the 12-04 night run (2026-11-27, from 21:09 UTC; times in CLOSEOUT-LOG.md)
+All six D-1397 items built and proved: D-1399 (the BLS card says Refresh loads from the placed files first and calls the
+API only to top up; the QT checks the loaded data's counts and digests against the data file instead of parsing the BLS
+files, 19 rows; the 34 national rows verified against `oesm25nat.zip`, 0 differences, nothing written, one verify-only
+load record the card skips; the data file gzipped, 1,671,942 → 141,353 bytes, sha256 34c87d06…, a scratch import equal
+on six tables; app e4d6d18, api 3406bed, 9fa1cc9) and D-1400 (CSV under `workspace/docs/reference/` out of the mirror,
+11 untracked, history list in `.private`; every pass stamp carries the gates hash and a stamp by other gate scripts is
+void, proved by a deliberate refused push; infra 6cd5f00, which also carries D-1399's drive). No migration (head
+d1396c4e8a17). No external call. The joint QT's three hours were the laptop asleep from about 18:12 to 20:43 UTC
+(D-1401; beat, worker and redis logs); every bench service came back with no restart. Gates on HEAD (fresh, D-1400):
+app app-2ecd9cd1943b, api api-99af539540ef, market market-1e8e467c85be, all gates 7d53a7526643. Founder $0.00 on every
+label. Fingerprint eacd2a92b3e281e2 at the start. Open question in morning-report-2026-12-04/NEXT-RUN.md.

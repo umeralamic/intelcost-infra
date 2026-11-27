@@ -140,9 +140,13 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
      every exit code read. The hook refuses a plain `git commit` there unless those gates passed on exactly the staged
      tree. **Every push** (app, api, infra with its mirror, marketing) goes through
      `intelcost-infra/gate-push.sh app|api|infra|market --owner D-NNNN`: it runs that repo's gates on a clean HEAD
-     (unless they passed on that exact tree in the last 24 h) and pushes `origin umer-dev`, never a force. Infra's gate:
+     (unless they passed on that exact tree in the last 24 h) and pushes `origin umer-dev`, never a force. **A pass stamp
+     counts only under the gate scripts that made it (D-1400):** each app, api, infra and market stamp carries the hash
+     of `gate-commit.sh`, `gate-push.sh` and `qt-key.sh` (`qt-key.sh --gates`), and the hook and `gate-push.sh` treat a
+     stamp from before a change to any of them as void, so the gates run fresh; a QT stamp is keyed to the QT inputs,
+     which hold those scripts. Infra's gate:
      shell, node and python syntax, the client and book names scan (every hit refuses, already-pushed ones too, and any
-     office file tracked under `workspace/docs/reference/`; D-1387), no private file tracked, and a QT pass when the push
+     office file or CSV tracked under `workspace/docs/reference/`; D-1387, D-1400), no private file tracked, and a QT pass when the push
      touches a QT input. Marketing's: the same names scan, `npm run lint`, `npm run build` (D-1388). The hook refuses any
      other push in the four repos, every push in legacy (`intelcost/`, D-1388), and `git push origin umer-dev` itself
      unless the gates passed on the tree being pushed, so a merge,
