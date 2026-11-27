@@ -141,9 +141,11 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
      tree. **Every push** (app, api, infra with its mirror, marketing) goes through
      `intelcost-infra/gate-push.sh app|api|infra|market --owner D-NNNN`: it runs that repo's gates on a clean HEAD
      (unless they passed on that exact tree in the last 24 h) and pushes `origin umer-dev`, never a force. Infra's gate:
-     shell, node and python syntax, the client and book names scan, no private file tracked, and a QT pass when the push
-     touches a QT input. Marketing's: `npm run lint`, `npm run build`. The hook refuses any other push in the four
-     repos, and `git push origin umer-dev` itself unless the gates passed on the tree being pushed, so a merge,
+     shell, node and python syntax, the client and book names scan (every hit refuses, already-pushed ones too, and any
+     office file tracked under `workspace/docs/reference/`; D-1387), no private file tracked, and a QT pass when the push
+     touches a QT input. Marketing's: the same names scan, `npm run lint`, `npm run build` (D-1388). The hook refuses any
+     other push in the four repos, every push in legacy (`intelcost/`, D-1388), and `git push origin umer-dev` itself
+     unless the gates passed on the tree being pushed, so a merge,
      cherry-pick, revert or rebase cannot be pushed ungated. An infra commit that stages a QT input,
      `lock.sh`, `gate-commit.sh`, `gate-push.sh`, `qt-key.sh` or the hook mirror (`workspace/.claude/hooks/`) is refused
      unless a QT passed on exactly those files with the live hooks equal to the mirror; a hook or lock change also
@@ -156,11 +158,17 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
    only. It checks that its own server bound the port: a "port in use" means someone else is there, and it stops
    nothing. On 2026-11-23 a port-lookup kill hit Docker Desktop's backend twice and took the bench down.
 
+14. **Bulk files, not APIs (D-1390).** For any external data source, bulk loads come from the source's published
+   download files, not its API. APIs are for small lookups and top-ups only. Before any run that calls a limited API:
+   state the call budget (calls needed vs the daily limit); never plan to use more than half a day's quota in one run;
+   failed calls count; record each source's actual reset behaviour. Downloads blocked to scripts are fetched by the MCP
+   browser or placed by me in test-data-local/.
+
 ## Git
 
 **`umer-dev` is the only branch we push or pull.** In every repo in the workspace, with one
-exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
-`main` is not ours to move.
+exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed (the hook refuses every push there,
+D-1388). `main` is not ours to move.
 
 - **Pull:** `git pull origin umer-dev`. Never pull onto `main`, and never merge
   `origin/main` down into the working branch without asking first.

@@ -38298,3 +38298,205 @@ all four through `gate-push.sh` (D-1381).
   "P05 (test)" from now on in every report and workspace file (D-1380's "unconfirmed" is closed). (2) D-1383 Q1:
   "shared machine lines" is the right label for wage rules 13. (3) D-1383 Q2: the rule applies to any WD anywhere;
   nothing to list. All three dropped from the open questions.
+
+## D-1384
+### D-1384 — The founder's answers to REPORT_2026-12-01, and the 12-02 night run brief (2026-11-27, logged 04:55 UTC)
+
+Answers (the founder's words, standing unless said):
+- **Q1:** yes, load the 171 metros left (item 1).
+- **Q2:** the platform's Refresh is resumable across days (item 2).
+- **Q3:** keep the current BLS key; no rotation. **One key for all environments** (the founder's decision).
+- **Q4:** remove the three spreadsheets under `workspace/docs/reference/` from the infra tree (a new commit). **Stop mirroring
+  spreadsheets and office files under docs/reference entirely** (exclusion list, like the bid tabs, D-1372). Then the infra
+  gate **refuses every names hit, old ones too** (D-1381's WARN for already-pushed office files ends). History is not
+  rewritten: list what history still holds; the founder decides later.
+- **Q5:** yes, the marketing push gate runs the client and book names scan.
+- **Q6:** yes, the hook refuses any push from the legacy repo (`intelcost/`).
+- **Standing:** two builders that both commit QT inputs take turns.
+
+Build, in order (each item checkpointed):
+1. **BLS (D-1385):** only the bench calls BLS. Pack every request to the maximum 50 series; report the calls needed for the
+   171 metros and for a full survey. Load the 171 metros until 0 are left. Never print the key. The key's daily reset: one
+   small test call after 11:05 pm Central (05:05 UTC); if refused, retry hourly, never more than one test call an hour;
+   record when it actually reset. While waiting, items 2 to 4 go first. After the load: re-price the 16-ZIP table for the
+   newly loaded metros and list every founder project's Update-rates move, real bids first.
+2. **BLS data file (D-1386):** export the finished BLS tables (areas, county mapping, OEWS rows, load records) as one data
+   file with a checksum, plus an import command. Staging and production import that file instead of calling BLS (they need
+   no key and make no calls). Proof: an import into a scratch database gives the bench's rows exactly. The platform's
+   Refresh runs only on the bench, resumable across days, then re-exports.
+3. **Q4 (D-1387):** the spreadsheets out of the tree, the mirror exclusion for office files under docs/reference, the
+   infra gate refusing every hit; the list of what history still holds.
+4. **Q5 and Q6 (D-1388):** the marketing names scan and the legacy push refusal, each proved by a deliberate refused attempt.
+
+Standing rules as always (D-1284 gate per save, migration before code, scratch proofs, no client or book names, no keys,
+no Live moves, founder projects read-only, throwaways purged with settings matched, smoke setup recorded, kill only your
+own PID, a running QT holds the app lock, commits through gate-commit.sh, pushes through gate-push.sh). Max 2 builders.
+Close-out as D-1380's, report in morning-report-2026-12-02 with NOTE_FOR_ABDULLAH.md (migration ids in order; staging
+needs no BLS key or calls: run the migration, then import the BLS data file, and where that file lives). Status to the
+founder at the push. Fingerprint at start 04:54 UTC: eacd2a92b3e281e2 = baseline; locks free; repos clean (app bfd93cb,
+api 1a2d090, infra 2802321, market 1f0be38), all even with origin/umer-dev.
+
+## D-1387 — Night run 2026-12-02, item 3: office files under docs/reference leave the infra tree and the mirror; the infra push gate refuses every names hit (D-1384 Q4)
+
+**Status:** Accepted (2026-11-27, the night run's builder B, from the founder's D-1384 Q4). Amends D-1381 (its WARN path
+ends) and extends D-1372 (the exclusion list).
+
+**Reading.** "Remove the three spreadsheets from the infra tree; stop mirroring spreadsheets and office files under
+docs/reference entirely; then the infra gate refuses every names hit, old ones too. History is not rewritten."
+
+- **Which files.** Office files = `xlsx, xls, xlsm, xlsb, ods, docx, doc, pptx, ppt, odt, odp` (any case). **My
+  choice:** CSV stays mirrored. It is plain text: the gate reads it in full and refuses any hit in it, and a diff shows
+  every change. Office files are binary containers the eye cannot review in a diff. (A question for the founder.)
+- **Out of the tree:** every office file under `workspace/docs/reference/` (six today: the three flagged in
+  `.private/gate-scan-infra.txt` and three without a hit) leaves the index in a new commit (`git rm --cached`). "Stop
+  mirroring entirely" covers all of them, not only the three: a tracked copy that the refresh no longer updates would go
+  stale. Their mirror copies on disk are byte-equal to the live `E:\Intelcost\docs\reference\` files (checked with
+  `cmp`), so they are deleted from `workspace/docs/reference/` too. The live files are not touched.
+- **Exclusion list:** a new block in `intelcost-infra/.gitignore` beside D-1372's: `workspace/docs/reference/**/*.<ext>`
+  for each extension above. The mirror refresh skips whatever that file ignores under `workspace/`. A new helper
+  `./workspace-mirror.sh --check | --apply` makes that exact: it compares the root's four files, `docs/` and `.claude/`
+  with `workspace/`, skips every root file whose mirror path `git check-ignore` reports, and prints the skipped ones as
+  expected "Only in" lines (counts by rule, no file names). `--apply` copies only new or changed files that are not
+  ignored; it never deletes.
+- **The gate:** the names scan refuses every hit: paths, text files and office files, already-pushed ones too. The WARN
+  line is gone. It also refuses any tracked office file under `workspace/docs/reference/`. Office files elsewhere are
+  unpacked (zip formats) or read raw (xls, doc, ppt) and refused on a hit.
+- **History** keeps the office files that were ever committed under `workspace/docs/reference/`. Listed by commit and
+  count in `morning-report-2026-12-02/d1387/SECTION.md`; the paths in `.private/d1387-history-office.txt`. The founder
+  decides later. Nothing is rewritten.
+
+## D-1388 — Night run 2026-12-02, item 4: the marketing push gate runs the names scan; the hook refuses every push from the legacy repo (D-1384 Q5, Q6)
+
+**Status:** Accepted (2026-11-27, the night run's builder B, from the founder's D-1384 Q5 and Q6). Extends D-1381.
+
+- **Q5, the marketing names scan.** `gate-commit.sh market --verify-head` (and so `gate-push.sh market`) runs the same
+  scan as infra before lint and build: every tracked path, every tracked text file of HEAD and every office file
+  (unpacked), substring, any case, against the client list and the book list. Counts on screen; the file list in
+  `.private/gate-scan-market.txt`. Any hit refuses.
+- **D-1381's one marketing hit** is a three-letter book-list term inside a random base64 `integrity` hash of
+  `package-lock.json` (a generated file; it cannot be reworded). **My choice:** the book-list scan blanks the values of
+  `"integrity": "sha…-…"` fields in a `package-lock.json` before it reads it, in both scans (infra and marketing).
+  Everything else in the lockfile (package names, URLs) is still scanned by substring. The client-list scan is not
+  changed at all: it reads the lockfile raw. This is a narrowing of the book scan to non-hash text, said plainly here
+  and asked of the founder (the other choice is to keep the raw scan and refuse marketing pushes until the lockfile's
+  hash changes).
+- **Q6, legacy.** The hook refuses every `git push` whose directory is the legacy repo `intelcost/` (by `cd`, `-C`,
+  Bash or PowerShell; any form, `--dry-run` included). Legacy is fetch and pull only. An unreadable call naming the
+  legacy repo and a push is refused too.
+- **Not changed:** `.claude/settings.json`, permissions, app or api source, the client list, the book list.
+
+## D-1386 — Night run 2026-12-02, item 2: the BLS data file (one file and its checksum, an import command); BLS called from the bench only; the platform Refresh resumable across days (D-1384 Q2, Q3, item 2)
+
+**The builder's readings, logged before any code (2026-11-27 ~05:02 UTC).**
+- **No migration.** Everything below uses the tables of d1382a7c4e10 as they are.
+- **The file:** `intelcost-app-fastapi/app/wagecalc/seed/bls_refdata.json` and `bls_refdata.json.sha256` beside it
+  (`sha256sum` format). Under `app/` so the api image carries it (the Dockerfile copies `app/`, not `data/`) and the
+  bench api sees it at `/srv/app/...` (the bench mounts `app/`, not `data/`; watchfiles reloads on Python only). Text,
+  one row per line, deterministic (rows in primary-key order, no export time), so a re-export with no new data gives
+  the same bytes and the same checksum, and a git diff shows the rows that moved. Size about 1 MB.
+- **What it holds:** the BLS reference tables pricing reads, whole: `ref_oews_area`, `ref_oews_area_county`,
+  `ref_oews`, `ref_bls_load` (the four named), and also `ref_eci` (the escalation index: staging calls no BLS, so its
+  ECI must come by the file too) and `ref_county_cbsa` (the Census county to metro list rules 11 and earlier read,
+  loaded by the same loader). Each table: its columns, its row count and a digest (sha256 of its rows as Postgres's
+  `row_to_json` writes them, primary-key order, time zone UTC). The file names the alembic revision it was exported at.
+- **Commands** (the one existing script, `scripts/bls_load.py`): `export [<path>]` (default the file above; writes the
+  file and its `.sha256`), `import [<path>]` (checks the file against its `.sha256` first and refuses on a mismatch;
+  checks each table's columns against the database's; then in ONE transaction deletes the six tables' rows and inserts
+  the file's, sets `ref_bls_load`'s identity past its largest id, digests each table again and rolls back unless every
+  count and digest equals the file's). Idempotent: a second import gives the same rows. On the bench an import refuses
+  without `--on-bench` (the bench is where the file comes from). `digest` prints each table's count and digest.
+  The import never calls BLS and needs no key.
+- **Bench only:** the api knows it is the bench by the existing setting `ENVIRONMENT=local` (the bench compose's value,
+  the default on a laptop) with `PRODUCTION` not true (`bls.calls_allowed()`); staging (`ENVIRONMENT=staging`) and
+  production (`ENVIRONMENT=production` or `PRODUCTION=true`) refuse. The refusal is in `bls.series` before any request
+  (so every BLS-calling path refuses: the loader's `eci` and `oews` commands, the newer-survey check and the platform
+  Refresh), and the Refresh endpoint refuses first with "BLS is called from the bench only: this server takes the BLS
+  data file (import)". The bulk-file path (no key) makes no call and is unchanged. The card shows that line and
+  disables Refresh where the api says so (`calls_allowed` in the summary).
+- **Refresh, resumable (Q2):** packed (D-1385 part A), ECI and the newer-survey check in one call, then the pending
+  areas: the national, state and defined (nonmetro, then metro) areas that have no row of the survey being loaded (a
+  newer May survey BLS has published, else the latest loaded). Whole areas are committed as they complete (every 10
+  calls), so a stop keeps everything fetched before it; a refusal by BLS (the key's daily limit) or a 429 after two
+  waits stops it cleanly, and so does a press that has run 4 minutes; the next press (the next day) picks up the areas
+  still missing. Each pending area loads median and p75 only (**changes D-1382's "the refresh keeps all three"**:
+  pricing never reads the mean; a full survey is 790 calls with two measures against 1,186 with three). After any
+  press that wrote rows the file is re-exported. The summary shows the areas left. The old Refresh did a new survey
+  in one transaction of ~1,186 calls, past the 500-a-day limit, so it could never finish: that is the bug this closes.
+  An area BLS publishes nothing for stays pending (2 calls a press); none is expected (every area loaded so far had rows).
+- **Proof:** a scratch database `intelcost_bls_scratch` created on the bench postgres (not the bench database),
+  migrated to head by the api image's alembic, the file imported, its six tables compared with the bench's row for
+  row (counts and per-table md5 of every row by psql, the same SQL on both), then dropped. QT rows (drive
+  `drives/qt-bls-d1386.py`): the packing count, the committed file's checksum and digests equal to the bench's tables,
+  a tampered copy refused, the bench-only refusal (staging and production settings refuse before any request).
+
+## D-1385 — Night run 2026-12-02, item 1: every BLS request packed to 50 series; the 171 metros left loaded (D-1384 Q1, item 1)
+
+**The builder's readings, logged before any code (2026-11-27 ~05:02 UTC).**
+- **Packing (part A, no BLS call):** each area needs 34 SOCs x 2 measures = 68 series. The D-1382 script fetched each
+  10-area batch on its own: 680 series = 13 calls of 50 + one of 30. Now the series of all the areas to load are one
+  list cut into calls of exactly 50 (the last one the rest); whole areas are written as their last series arrive,
+  committed every 10 calls and at a stop. Counts: **171 metros 240 -> 233 calls**; a **full survey** (528 defined
+  areas, 51 states, national = 580 areas): D-1382's script route 847 calls (nonmetro 189, metro 551, states and national
+  107 with three measures), its Refresh 1,186 (one transaction, could never finish); packed **790** (39,440 series in
+  789 calls, ECI and the newer-survey check in one), two days at the key's 500 a day. A 429 waits 60 s and retries,
+  twice, then stops.
+- **The daily reset:** one small test call (1 series) after 05:05 UTC; if refused, one more each hour, never more than
+  one an hour; the time it first answers is recorded. Then `oews --metro --missing` until 0 are left, then the file
+  re-exported (D-1386) and the import proved again.
+- **After the load:** the 16-ZIP x 10-craft table for the newly loaded metros, before -> after (read only, rolled back),
+  and every founder project's Update-rates move, real bids first. No founder project is in one of the 171 metros
+  (P01, P05, P10 New York; Real bid A, B Houston; P08 Gallia nonmetro): expected $0.00 data part for each, to be shown.
+
+### D-1384 (part b) — The founder ends the 12-02 run early (2026-11-27, 13:02 UTC)
+The founder's order: close out now with items 2 to 4 and end the run (gates, full quantity table, name scans, mirror, purge,
+fingerprint, one push per repo; report in morning-report-2026-12-02 with the packed-request call counts for the 171 metros
+and a full survey, and the Next.js security error: version, advisory, fix). **Item 1 (the 171 metros, D-1385) is not
+continued:** no more BLS test calls, no timers (eight test calls 05:07:40 to 12:58:35 UTC, all refused at the daily
+limit). NEXT-RUN.md item 1: the 171 metros, "start after 00:15 UTC (6:15 pm Central)"; item 2: the Next.js upgrade. All
+locks released at the end.
+
+## D-1389 — OEWS loads from BLS's published May data file; no second key; the API only for top-ups (the founder's standing decision, 2026-11-27)
+
+**Status:** Accepted (the founder's answer, relayed at the 12-02 close-out, 13:1x UTC). Standing. Supersedes the
+test-call plan of D-1385 for the 171 metros, and the "second key" question of REPORT_2026-12-01 (answered: no).
+
+- **No second BLS key.** BLS's terms: getting round the limits can get access blocked.
+- **OEWS loads from BLS's published May data file** (the May 2025 metropolitan and nonmetropolitan area download, or
+  the all-data download, from the BLS OEWS tables page). It goes into `test-data-local/wage/bls/` (downloaded with the
+  MCP browser, or placed by the founder). A new `scripts/bls_load.py` command imports it.
+- **Verified before it loads anything new:** every OEWS row already loaded through the API must match the file exactly
+  (count and a per-row compare). Only then are the 171 metros loaded from the file, and the BLS data file (D-1386)
+  re-exported.
+- **API calls only for top-ups** (what the file lacks), under the key's daily limit as before.
+- **Each new May survey** loads the same way. The platform's Refresh uses the file when it is present (bench only, as
+  D-1386).
+- Not built tonight: the run was ended (D-1384 part b). No download, no BLS call. The next run's item 1.
+
+## D-1390 — Bulk files, not APIs (the founder's standing rule, 2026-11-27; CLAUDE.md hard rule 14)
+
+**Status:** Accepted, standing (the founder's words, relayed at the 12-02 close-out, 13:2x UTC). Generalises D-1389 to
+every external data source.
+
+The founder's rule, verbatim: "for any external data source, bulk loads come from the source's published download
+files, not its API. APIs are for small lookups and top-ups only. Before any run that calls a limited API: state the
+call budget (calls needed vs the daily limit); never plan to use more than half a day's quota in one run; failed calls
+count; record each source's actual reset behaviour. Downloads blocked to scripts are fetched by the MCP browser or
+placed by me in test-data-local/."
+
+- Written into `CLAUDE.md` as hard rule 14, "Bulk files, not APIs (D-1390)", in the founder's wording.
+- For BLS (the first source it applies to): the founder has placed `oesm25ma.zip`, `oesm25st.zip` and
+  `area_definitions_m2025.xlsx` in `test-data-local/wage/bls/`; the next run loads the 171 metros from them (D-1389),
+  no download. The BLS key's reset behaviour as recorded on 2026-11-27: spent at about 00:10 UTC; eight 1-series test
+  calls 05:07 to 12:58 UTC all refused (a rolling 24 hours, or a reset later than 05:05 UTC).
+- The next run also audits (report only) every external source the app or scripts call.
+
+### D-1384 (part c) — Close-out of the 12-02 night run (2026-11-27, from 13:05 UTC; push times in CLOSEOUT-LOG.md)
+Items 2 to 4 (D-1386, D-1387, D-1388) built, proved and pushed; item 1 (D-1385) open: the packing is built (api cfd9908),
+the 171 metros not loaded (eight test calls refused at the key's daily limit), the founder stopped it. No migration (head
+d1382a7c4e10). Gates on HEAD: app pass app-8b75e869c89f, api pass api-6d3e80cac373; marketing's build refused by Next.js
+16.4.0's SecurityFatalError (critical advisories GHSA-2464-fhr4-w9xw, GHSA-673q-mjm6-r5xr, affected up to 16.4.4; fix
+`next` and `eslint-config-next` 16.4.6, `zod` >= 4.6.6; NEXT-RUN item 2, founder to say go; nothing changed in
+marketing). Full QT 13:26:15-13:45:45 exit 0, 0 FAIL (qt-ba8e7f23c1e8). Fingerprint eacd2a92b3e281e2 at start and end.
+The founder's answers relayed during the close-out are D-1389 (OEWS from BLS's published May data file, no second key,
+the API for top-ups) and D-1390 (hard rule 14, bulk files not APIs). NEXT-RUN: 1 the 171 metros from the founder's placed
+files, 2 the Next.js upgrade, 3 an audit (report only) of every external source.
