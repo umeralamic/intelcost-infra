@@ -133,15 +133,18 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
      (`curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/docs` gives 200). A save that lands while the
      api is still reloading can leave it down with only `watchfiles` running (2026-11-13, 16:26 to 16:31 UTC).
      `touch` a watched file under `app/` to bring it back, and report the window.
-   - **Locks, commits and pushes are enforced (D-1367, D-1373).** The quantity table takes the heavy and app locks
+   - **Locks, commits and pushes are enforced (D-1367, D-1373, D-1381).** The quantity table takes the heavy and app locks
      itself (`QT_OWNER=D-NNNN ./quantity-table.sh`; locks in `E:\Intelcost\.locks\`, `intelcost-infra/lock.sh status`),
      and while it runs the founder gate hook refuses every app or api save, whatever the quiet stamp says. App and api
      commits go through `intelcost-infra/gate-commit.sh app|api --owner D-NNNN -m "..."`, which runs the full gates with
      every exit code read. The hook refuses a plain `git commit` there unless those gates passed on exactly the staged
-     tree. **Pushes** of app and api go through `intelcost-infra/gate-push.sh app|api --owner D-NNNN`: it runs the gates
-     on a clean HEAD (unless they already passed on that exact tree) and pushes `origin umer-dev`, never a force. The
-     hook refuses any other push there, and `git push origin umer-dev` itself unless the gates passed on the tree being
-     pushed, so a merge, cherry-pick, revert or rebase cannot be pushed ungated. An infra commit that stages a QT input,
+     tree. **Every push** (app, api, infra with its mirror, marketing) goes through
+     `intelcost-infra/gate-push.sh app|api|infra|market --owner D-NNNN`: it runs that repo's gates on a clean HEAD
+     (unless they passed on that exact tree in the last 24 h) and pushes `origin umer-dev`, never a force. Infra's gate:
+     shell, node and python syntax, the client and book names scan, no private file tracked, and a QT pass when the push
+     touches a QT input. Marketing's: `npm run lint`, `npm run build`. The hook refuses any other push in the four
+     repos, and `git push origin umer-dev` itself unless the gates passed on the tree being pushed, so a merge,
+     cherry-pick, revert or rebase cannot be pushed ungated. An infra commit that stages a QT input,
      `lock.sh`, `gate-commit.sh`, `gate-push.sh`, `qt-key.sh` or the hook mirror (`workspace/.claude/hooks/`) is refused
      unless a QT passed on exactly those files with the live hooks equal to the mirror; a hook or lock change also
      needs a deliberate attempt in its report that shows the new refusal.
@@ -161,7 +164,8 @@ exception: legacy (`intelcost/`) is read from `UmeralamDEV` and never pushed.
 
 - **Pull:** `git pull origin umer-dev`. Never pull onto `main`, and never merge
   `origin/main` down into the working branch without asking first.
-- **Push:** `git push origin umer-dev` (app and api: `intelcost-infra/gate-push.sh app|api --owner D-NNNN`, D-1373). No other branch, in any repo. **Once or twice a day at most
+- **Push:** only `intelcost-infra/gate-push.sh app|api|infra|market --owner D-NNNN` (D-1373, D-1381), which pushes
+  `origin umer-dev` after the gates. No other branch, in any repo. **Once or twice a day at most
   (D-851):** commit each block locally as it finishes, and push the day's commits together, not after
   every block.
 - **Merge the alembic versions before committing (D-851).** The migrations a session adds to

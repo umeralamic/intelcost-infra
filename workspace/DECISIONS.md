@@ -38093,3 +38093,208 @@ next run, with the D-1378 3 HOLD: no Update rates on P08 or any rural-county pro
 updated; mirror refreshed (the D-1372 exclusions kept out). Throwaways: none left from tonight (0 fx workspaces, 0
 projects made tonight, 0 BENCH DUPs; the four older fx accounts kept). Digest 49f90aa6775fddaa at start and end. One
 push per repo; app and api through `gate-push.sh`.
+
+## D-1380 — The founder's answers to REPORT_2026-11-30; night run 2026-12-01 brief
+
+Given 2026-11-26 after the 11-30 close-out. Binding for the run filed as 2026-12-01.
+- **Q1 (P10's −$88,108.02) and project kinds.** P08 and P10 are test copies (the 3D test), not real bids.
+  P10's move is accepted; no hold on P10. P08's hold stays only as the test case for local wage areas.
+- **Standing (reports):** every report marks each founder label as TEST or REAL BID ("P08 (test)", "Real bid A (real
+  bid)") and lists real-bid dollar effects first. Kinds as of today: Real bid A, Real bid B = real bid (founder);
+  P08, P10 = test (founder); P01 = test (its name says so; founder to confirm); P05 = unconfirmed, listed with the real
+  bids until the founder says (a question in the report). Other labels have no wage set.
+- **Q2, Q3, Q5, Q6:** fine as built (P10's "wages" rule line name; Real bid A's "Rates updated … +$118.77"; two lines
+  under one Dismiss; the rule's share priced with today's settings).
+- **Q4: yes.** A split pair whose class line names several machines is no split: the Miami dozer goes to the class level
+  ($29.01 at D-1374's date). Item 3, with QT rows.
+- **Q8: yes.** The Update rates dialog shows a dash, not "None", for a craft the old set lacked. Item 3.
+- **Q9:** gate infra pushes and the marketing site's pushes (marketing: lint and build); the mirror is not gated
+  (mirror commits live in infra, so the infra gate covers the infra repo, not a separate mirror step). Item 1, proved
+  by a deliberate refused attempt.
+- **Q10: fine** (a 24 h gate pass for the same tree is reused).
+- **Nonmetro spec (D-1379) answers:** (1) a missing occupation in an area uses the state scaled by the area's ratio;
+  (2) load every BLS metro AND every nonmetro area, with the county mapping (Q16's metro limit is lifted for this);
+  (3) reload OEWS only when BLS publishes a newer survey; (4) the MCP browser may download BLS's public
+  area-definitions file into test-data-local/wage/bls/; (5) the user-facing label is "local wage areas".
+- **Run brief:** items in order: 1 push gates (infra, marketing); 2 local wage areas per
+  docs/tasks/bls_nonmetro_areas_tasks.md and these answers (all metros + nonmetro areas + county mapping; fallback metro
+  → nonmetro → state scaled → national; a new rules number; one-time note "local wage areas"), then re-price on
+  settings-matched throwaway copies: P08 (expect near $767,453.49), the 16-ZIP × 10-craft table, and every founder
+  project's Update-rates move, real bids first; 3 Q4 and Q8 with QT rows. Status to the founder after item 2's P08
+  figure and at the push. Report in morning-report-2026-12-01 with NOTE_FOR_ABDULLAH.md (migration ids in order; any
+  data load the deploy must run). D-numbers reserved: item 1 D-1381, item 2 D-1382, item 3 D-1383.
+- **Fingerprint at the 12-01 start (22:54 UTC):** eacd2a92b3e281e2, not 49f90aa6775fddaa. The read-only check
+  (`fingerprint.sh <uuid> --since 2026-11-26T18:40:00Z` on all 18): only P08 (test) changed (one visit, one weather row,
+  one estimate_rule_note, a work session; 22:49–22:52) and Real bid A (real bid) (one visit, 5 sheet registrations, a
+  work session; 22:48–22:49). No wage set changed (no Update rates pressed). No builder ran then. The founder confirmed
+  "it was me": adopted as the baseline.
+
+## D-1382 — Night run 2026-12-01, item 2: local wage areas (wage rules 12): every BLS OEWS metro and nonmetro area with its counties (D-1378 2, D-1379 spec, D-1380 answers 1-5)
+
+**The builder's readings, logged before any code (2026-11-26 ~23:05 UTC).** Spec `docs/tasks/bls_nonmetro_areas_tasks.md`
+with the founder's D-1380 answers: (1) scaled state for a missing occupation, (2) every metro AND every nonmetro area,
+(3) OEWS reloaded only on a newer survey, (4) the MCP browser downloads BLS's public area-definitions file, (5) the
+user-facing label "local wage areas".
+- **Definitions:** BLS `area_definitions_m2025.xlsx`, downloaded once by the MCP browser into
+  `test-data-local/wage/bls/` (out of git). One migration on the pushed head d1375b4e8c21: `refdata.ref_oews_area`
+  (vintage, area_code, area_name, kind metro|nonmetro) and `refdata.ref_oews_area_county` (vintage, county_fips ->
+  exactly one area per vintage), empty; run on the bench first (fingerprint and schema before/after), then the code.
+  The loader `bls_load.load_oews_areas` (beside `load_cbsa`) fills them through `scripts/bls_load.py areas <path>`
+  (an existing script) and writes a `ref_bls_load` row of kind `oews_area`. No hand SQL.
+- **Wage rows:** the existing `load_oews` through `scripts/bls_load.py oews --nonmetro | --metro [--missing]`, by the
+  BLS API with the bench key, nonmetro areas first, then metros, in batches each committed on its own, stopping
+  cleanly when the key's daily limit answers (the batch that failed is not written). The mean is not read by
+  pricing, so the new areas load median and p75 only (`measures`), a third fewer series, so more areas fit in a day;
+  the refresh keeps all three. `--missing` loads only the areas with no row of the latest survey: that is how the next
+  load finishes whatever tonight's limit leaves. Never another BLS file (a question for the founder if needed).
+- **Wage rules 12** (`WAGE_RULES = 12`, `NONMETRO_RULES = 12`, gated on `rules >= 12`; a saved set keeps its rules and
+  only Calculate or Update rates moves it). Per occupation: the county's own OEWS area of the definitions' vintage
+  (its metro, else its nonmetro area) -> the state scaled by that area's ratio (D-1095: the median of area over state
+  across SOC 47- with three or more pairs, same survey) -> the raw state -> national. A pre-2022 Connecticut county
+  (09001-09015) takes the project ZIP's largest-share planning region, else Connecticut. American Samoa and the
+  Northern Marianas (no OEWS area) go state then national. Rules 11 and earlier: today's county -> Census CBSA lookup
+  exactly as now (it never reads a nonmetro code). **Data, not rules:** loading the new metros' rows is a data load;
+  a Recalculate (keeps a set's rules) of a rules-11-or-older set in a county whose metro was not loaded before moves by
+  that data, as every OEWS load has done (D-1376's BLS step); the note then reads "Rates updated (escalation/data)".
+  No founder project is in such a county (P01, P05, P10 New York; Real bid A, B Houston; P08 Gallia, nonmetro).
+- **Words:** the source line "Local market (Southern Ohio local wage area): BLS May 2025 survey, median $23.96.", the
+  scaled one "(no figure for the Southern Ohio local wage area: Ohio median $X x 0.NNN)", the market note strips
+  " local wage area" as it strips " metro". No "nonmetro" or "BLS area" shown to a user. The note key `wages_12`,
+  label "local wage areas", in the api's `WAGE_NOTES` (so `KNOWN`) and the app's `RULE_CHANGES`, named by its cause
+  (D-1375 part b, landed): its rule line carries only this rule's $, the rest "Rates updated (escalation/data)". No
+  D-number on screen. `refresh` reloads OEWS only when a newer survey than the one loaded is published (one national
+  series checked first); ECI as now. `BlsDataCard` labels the new kind "Wage area definitions".
+- **Proof:** QT drive `drives/qt-wages-d1382.py` and its line (Gallia 47-2061 23.96 by 12 and Ohio statewide by 11; a
+  metro county the same by 11 and 12; a rules-11 set to the cent; a county whose metro was not loaded before on its
+  metro; a Connecticut planning region and a pre-2022 county; the scaled-state fallback; the definitions' shape).
+  P08 (test) on a settings-matched throwaway copy (Update rates on the copy only; expected near $767,453.49); the
+  16-ZIP x 10-craft table 11 -> 12; every founder project's move by label, real bids first; one smoke; purge.
+
+## D-1381 — Night run 2026-12-01, item 1: no push of infra or the marketing site without a gate pass on the pushed tree; one push helper for all four repos (D-1380 Q9, Q10)
+
+**Status:** Accepted (2026-11-26, the night run's builder, from the founder's D-1380 Q9). Extends D-1373.
+
+**Reading.** "Gate infra pushes and the marketing site's pushes (marketing: lint and build); the mirror is not gated
+separately." The mirror is a folder of infra, so the infra gate covers it. Same shape as D-1373: the push is the door,
+the pass stamp is keyed to the tree the push sends, 24 h (Q10).
+
+- **One helper:** `./gate-push.sh app|api|infra|market --owner D-NNNN [--dry-run]`. Same checks as D-1373 (on
+  umer-dev, nothing staged, unstaged or untracked, no merge/rebase/cherry-pick/revert/am in progress, no QT running),
+  a fresh stamp `<kind>-<HEAD's tree>` reused, else `gate-commit.sh <kind> --owner D --verify-head`, then HEAD and the
+  stamp checked again, then `git push [--dry-run] origin umer-dev`. Never a force, never another branch.
+- **The hook** reads a `git push` in all four repos (`cd` or `-C`, Bash or PowerShell) with D-1373's rules: only
+  `git push [-n|--dry-run|-v|-q|--porcelain] origin umer-dev`, and only with a stamp at most 24 h old for the local
+  umer-dev's tree. Every other form is refused. An unreadable call naming one of the four repos and a push is refused.
+- **`gate-commit.sh infra|market` takes only `--verify-head`.** Infra and marketing commits stay plain `git commit`
+  (infra's QT-input rule of D-1367/D-1373 unchanged); their gate runs at the push.
+- **The infra gate** (on HEAD's clean tree, every exit code read, the first non-zero stops):
+  1. `bash -n` of every tracked `*.sh`.
+  2. `node --check` of every tracked `*.js`, `*.mjs`, `*.cjs` (all of them, not only browser/ and drives/).
+  3. Python syntax (`ast.parse`, nothing written) of every tracked `*.py`, in a throwaway `python:3.14-slim`
+     container (the api's Python; `--pull never`, `--network none`, the repo mounted read-only). Python is not on the
+     host PATH (the WindowsApps stub is not used). Not a bench image and not the bench's code, so not founder-gated.
+     No local image: the gate fails (closed).
+  4. Names: every tracked path and every tracked text file of HEAD, substring, any case, against the client list, the
+     book list and the two extra client names (counts only; the file list goes to `.private/gate-scan-infra.txt`).
+     Nothing is exempt. Office files (xlsx, docx, pptx) are unpacked and scanned the same way; a hit refuses when the
+     push adds or changes that file. **My interpretation:** a hit in an office file that is already on
+     `origin/umer-dev` unchanged is counted and printed as a WARN line, not a refusal: it is already published and
+     blocking the push un-publishes nothing. Three such spreadsheets exist under `workspace/docs/reference/` today
+     (counts in the report; a question for the founder). Other binaries (images, PDFs) are not read.
+  5. No `.private/` or `.locks/` path, no private file by name (guard list, denylists, the quiet stamp, the gate log,
+     the catalog patterns, screen names, fx protected ids) and no `.env` other than `*.example` tracked.
+  6. When the pushed range (`origin/umer-dev..HEAD` by the local remote ref; the whole tree without one) touches a QT
+     input (D-1367/D-1373's list), a QT pass `qt-<qt-key.sh --index>` at most 24 h old must exist for HEAD's files.
+     The gate does not start a QT (26 min, heavy and app); it refuses and says to run one.
+- **The marketing gate:** `npm run lint`, `npm run build` (check:media, next build, check:links), each exit code read;
+  never prettier. Holds the heavy lock. The bench's `marketing` service runs `next dev` on the mounted source with
+  `.next` and `node_modules` in container volumes, so a host build writes only the host `.next` and reloads nothing a
+  visitor of localhost:3000 sees; the gate also refuses when the build changed a tracked or untracked file.
+- **Enforcement files:** these scripts and the hooks are QT inputs (D-1373); a commit staging them needs a QT pass on
+  exactly those files and the staged hook mirror equal to the live hooks.
+- **Not changed:** `.claude/settings.json`, permissions, app or api source.
+
+### D-1382, built and proved (2026-11-26 23:05 – 2026-11-27 01:xx UTC)
+- **Built:** api 368856a (wage rules 12 `NONMETRO_RULES`; `market.local_area`, `oews_for(nonmetro, area_county)`, the
+  definitions read by vintage; `bls_load.load_oews_areas`, `defined_areas`, `newer_survey`, `load_oews(measures)`,
+  `refresh` OEWS only on a newer survey; `scripts/bls_load.py areas`, `oews --nonmetro|--metro [--missing]`; `wages_12`
+  in `WAGE_NOTES`, `_cause_key` files a move under it when only rules 12 changed its figures, a move shown once whichever
+  crossed key was recorded; migration **d1382a7c4e10** on d1375b4e8c21, run on the bench first, re-run 23:45–23:46 to
+  widen `ck_ref_bls_load_kind` with `oews_area`), api b9d3a51 (a BLS refusal never carries the key: the daily-limit
+  message quotes it), app 5053c21 (`wages_12` "local wage areas", the market note, the BLS card), infra fdf074c
+  (`drives/qt-wages-d1382.py`, 25 rows, and its line). `wages_12` arrived on the bench 23:52:53 UTC.
+- **Data (bench, through the loader):** definitions 3,222 counties, 528 areas (393 metro, 135 nonmetro; 0 Census metro
+  counties differ); OEWS median and p75 for all 135 nonmetro areas (1,874 rows) and 210 more metros (3,098 rows): 222 of
+  393 metros loaded, **171 left** (the key's daily limit, 00:10 UTC). The next load: `oews --metro --missing`.
+- **QT** `QT_OWNER=D-1382` 00:30:52–00:49:09 exit 0, 0 FAIL, pass qt-cba39c69b8d2 ("local wage areas, wage rules 12
+  (D-1382): 25 rows, all right"). **Smoke PASS** (Gallipolis 45631: "Local market (Southern Ohio local wage area): BLS
+  May 2025 survey, median $23.96."; the scaled line on the Elevator Mechanic).
+- **P08 (test)** on a settings-matched copy, Update rates: $767,289.41 -> **$767,464.54** (+$175.13; the what-if
+  $767,453.49 plus one more day's escalation, Laborer 34.25 -> 34.26, +$11.05). Note "Pricing rule changed (local wage
+  areas, Nov 26, 2026): −$14,170.28" + "Rates updated (escalation/data, Nov 27, 2026): +$14,345.41". **Real bid A (real
+  bid)** copy: +$9.29, "Rates updated (escalation/data)" only. Real bid B, P05, P01, P10 (read only): rules 11 and 12
+  price their inputs identically ($0.00 rule part). The D-1378 3 hold can end: the founder presses Update rates on P08
+  when ready. The BLS key appeared once in the session's tool output (not in any file or commit): rotation is a question.
+  Report: `intelcost-infra/morning-report-2026-12-01/d1382/SECTION.md`.
+
+## D-1383 — Night run 2026-12-01, item 3: wage rules 13, a split pair whose class line names several machines is no split (the Miami dozer at its class level); a dash for a rate the old set lacked (D-1380 Q4, Q8)
+
+**The builder's readings, logged before any code (2026-11-27 ~01:25 UTC).**
+- **Q4, wage rules 13.** `WAGE_RULES` 12 -> 13 and `SHARED_PAIR_RULES = 13`, the D-1368/D-1374 pattern: gated on
+  `rules >= 13` in the code path, so a saved set keeps its rules (a recalculation prices it as before) and only a new
+  Calculate or "Update rates" moves it to 13. Open shop only (`_no_split` in `_own_line_open_shop`); prevailing and union
+  read the open-shop figures as their floor, so they follow.
+- **The rule.** A recent split pair whose class line names several machines, truck types or laborer groups (whole
+  names, D-1359; `_named` has two or more) is no split, as rules 10 made a pair whose class line names one: the machine
+  goes to its class level (or the company default premium, the excavator's 21.5 %, when the workspace has one), said
+  "WD survey line ... names the backhoe and the excavator, not a class line: no split." Florida's Highway pair
+  ("OPERATOR: BACKHOE/EXCAVATOR/TRACKHOE" against "OPERATOR: BULLDOZER", +4.45 %) is no split: the Miami-Dade dozer is
+  its Equipment Operator's level ($29.01 at D-1374's date). A real pair (a general class line, "POWER EQUIPMENT
+  OPERATOR" against "... : EXCAVATOR") keeps its ratio. The machines the shared line names still read it as their own
+  line (D-1374, unchanged).
+- **Pricing changes, so the rules move** (founder rule: bump only if a rate moves). One-time note key `wages_13`, label
+  by its cause "shared machine lines" (no D-number), a row in the api's `WAGE_NOTES` (so `KNOWN`) and in the app's
+  `RULE_CHANGES`, arrival recorded per environment at the api's first start with it (D-1353), no migration.
+- **The note's cause key, generalised.** D-1382's `_cause_key` names a move by local wage areas when only rules 12
+  changed its figures. With 13 a move can cross 12 and 13: the move's inputs are priced at each rules number from 11 up
+  to the move's after rules (only when the move changed a figure), and a move whose figures only one cause rule changed
+  (12 or 13) is filed under that rule's key; any other move keeps the lowest key it crosses, as before. The four-argument
+  `_cause_key(step, was, mid, now)` the D-1382 drive calls keeps its answers.
+- **Q8.** The Update rates dialog shows a dash for a craft the old (or new) set lacks, not "None", and a dash in its
+  Change cell. The dash is a table's empty-value glyph, as in 54 other app files, not prose (house style P6 is about
+  prose). One helper in `features/wage-calculator/text.ts` (`rateCell`), so the quantity table can read it.
+- **Proof:** QT drive `drives/qt-wages-d1383.py` (the Florida pair by 12 a real pair, by 13 no split at bare's level and
+  said; a single-machine class line still no split; a real pair by 13 still split; a pair whose class line names several
+  machines with the company default premium; the note key and the 12 -> 13, 11 -> 13 and 6 -> 13 moves; the cause key
+  across 12 and 13) and its line in `quantity-table.sh`; a cost row in `browser/lib/cost-cases.mjs` for the dash. The
+  16-ZIP x 10-craft table 12 -> 13 and every founder project's rules 12 vs 13 on its current set's own inputs, read
+  only, real bids first. One smoke on a throwaway (a Miami ZIP: the dozer at its class level; the dialog's dash).
+
+### D-1383, built and proved (2026-11-27 01:25 – 02:05 UTC)
+- **Built:** api 1a2d090 (wage rules 13 `SHARED_PAIR_RULES`, `_no_split(label, shared_pair)`; `wages_13` in `WAGE_NOTES`;
+  `_filed_under`, the cause key across rules 12 and 13), app bfd93cb (`rateCell`/`rateChange`: a dash for a craft a set
+  lacks; `wages_13` "shared machine lines"), infra 38ecd8d (`drives/qt-wages-d1383.py`, 18 rows, its line; the
+  `update-rates-dash` cost row). No migration.
+- **QT** `QT_OWNER=D-1383` 01:44:17–02:03:05 exit 0, 0 FAIL, pass qt-74abcdf8c325. **Smoke PASS** (Miami 33131: Dozer =
+  Equipment Operator $29.01 base, "names the backhoe and the excavator, not a class line: no split.").
+- **16 ZIPs 12 -> 13:** only the Miami-Dade dozer moves, 30.30 -> 29.01. **Founder $:** Real bid A (real bid), Real bid B
+  (real bid), P05 (unconfirmed), P01 (test), P08 (test), P10 (test): rules 12 and 13 price each current set's inputs
+  identically (58/58), $0.00. Report: `intelcost-infra/morning-report-2026-12-01/d1383/SECTION.md`.
+
+**Close-out of the night run 2026-12-01 (D-1380), 2026-11-27 02:07–02:5x UTC.** Nothing came in from origin/umer-dev or
+origin/staging (api fefc25c and app 2751330 already in umer-dev); no merge. One new migration, `d1382a7c4e10` on the
+pushed head d1375b4e8c21; one head, the bench on it; nothing to fold. Gates on HEAD through `--verify-head`: app lint (0
+errors, the 4 known warnings), typecheck, build 02:09:24–02:20:24, pass app-5fa369095328; api ruff check, ruff format,
+mypy, one alembic head 02:20:54–02:21:19, pass api-4030a21b9597; /docs 200. Full quantity table alone
+(`QT_OWNER=closeout`) 02:21:43–02:40:21: exit 0, 0 FAIL, pass qt-74abcdf8c325 (the same key as D-1383's run). Client and
+book names 0 (substring, case-insensitive, raw and `\x`/`\u` decoded) over every diff origin..HEAD, the commit messages,
+the workspace files, the mirror and the report folder. FEATURES (D-1382 and D-1383 on the F20 row; the two note keys on
+the repricing-notice row; the Planned row renamed "Local wage areas", built, tracked on F20; nothing moved to Live),
+MANAGER (In Progress rows D-1381 to D-1383; Planned "Finish the BLS metro load", 171 metros), SINCE_ARCHIVE updated;
+mirror refreshed (the D-1372 exclusions kept out). Throwaways: none left from tonight (0 fx workspaces, 0 projects made
+tonight, 0 BENCH DUPs; the four older fx accounts kept). Digest eacd2a92b3e281e2 at start and end. One push per repo,
+all four through `gate-push.sh` (D-1381).
+- **The founder's answers relayed at the close-out (2026-11-27 ~02:15 UTC, standing):** (1) **P05 is a test project**:
+  "P05 (test)" from now on in every report and workspace file (D-1380's "unconfirmed" is closed). (2) D-1383 Q1:
+  "shared machine lines" is the right label for wage rules 13. (3) D-1383 Q2: the rule applies to any WD anywhere;
+  nothing to list. All three dropped from the open questions.
