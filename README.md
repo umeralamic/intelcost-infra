@@ -257,7 +257,7 @@ Waits are on page state, never a clock: `enterWorkspace`, `shellSettled`, `pageS
 and `sheetPoint` (a point on the sheet checked to be in the window). `quietFor` only to
 prove something does not happen.
 
-## Locks, the quantity table, gate-commit and gate-push (D-1367, D-1373)
+## Locks, the quantity table, gate-commit and gate-push (D-1367, D-1373, D-1381)
 
 The tools refuse what the rules used to only state (the founder's D-1365).
 
@@ -310,6 +310,26 @@ and that one only when a gate pass stamp (at most 24 h old) exists for the tree 
 cherry-pick, revert or am in progress, and a running QT; uses a fresh stamp for HEAD's tree if one exists (a
 `gate-commit.sh` commit leaves one), else runs `gate-commit.sh --verify-head`; then pushes `origin umer-dev`. Never a
 force; a non fast-forward is refused by git (merge, then run it again).
+
+**Infra and the marketing site push the same way (D-1381):**
+
+```bash
+./gate-push.sh infra  --owner D-NNNN [--dry-run]   # this repo; the workspace mirror is in it
+./gate-push.sh market --owner D-NNNN [--dry-run]   # intelcost-market-next
+./gate-commit.sh infra|market --owner D-NNNN --verify-head   # their gates on a clean HEAD, no commit (their commits stay plain git commit)
+```
+
+The hook's push rule covers all four repos (stamps `infra-<tree>`, `market-<tree>`). The infra gate: `bash -n` of
+every tracked `*.sh`; `node --check` of every tracked `*.js`, `*.mjs`, `*.cjs` (about 80 s); a Python syntax check
+of every tracked `*.py` in a throwaway `python:3.14-slim` container (`--pull never`, `--network none`, read-only
+mount; python is not on the host); the names scan (paths and text files, substring, any case, against
+`.private/client-denylist.txt` and `.private/book-denylist.txt`; office files unpacked; counts only, the file list in
+`.private/gate-scan-infra.txt`; a hit in an office file already on `origin/umer-dev` unchanged is a WARN, any other
+hit refuses); no `.private/`, `.locks/`, private list, stamp or `.env` (other than `*.example`) tracked; and, when the
+range `origin/umer-dev..HEAD` touches a QT input, a QT pass for HEAD's files (`qt-<./qt-key.sh --index>`). It does not
+start a QT: run `QT_OWNER=D-NNNN ./quantity-table.sh` and push again. The marketing gate: `npm run lint`,
+`npm run build`, never prettier. The bench's `marketing` service runs `next dev` with `.next` and `node_modules` in
+container volumes, so a host build reloads nothing it serves.
 
 **Enforcement files count as QT inputs (D-1373).** `lock.sh`, `gate-commit.sh`, `gate-push.sh`, `qt-key.sh` and the
 hook mirror `workspace/.claude/hooks/` are in the QT key. `./qt-key.sh --worktree` reads the LIVE hooks in

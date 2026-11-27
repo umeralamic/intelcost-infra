@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
-# Gate and push (D-1373, the founder's D-1371 Q7: "Gates must pass before ANY push, merges included").
+# Gate and push (D-1373, the founder's D-1371 Q7: "Gates must pass before ANY push, merges included"; D-1381, the
+# founder's D-1380 Q9: infra and the marketing site too, the mirror inside infra's gate).
 #
-#   ./gate-push.sh app --owner D-NNNN [--dry-run]
-#   ./gate-push.sh api --owner D-NNNN [--dry-run]
+#   ./gate-push.sh app    --owner D-NNNN [--dry-run]     intelcost-app-react
+#   ./gate-push.sh api    --owner D-NNNN [--dry-run]     intelcost-app-fastapi
+#   ./gate-push.sh infra  --owner D-NNNN [--dry-run]     intelcost-infra (the workspace mirror is in it)
+#   ./gate-push.sh market --owner D-NNNN [--dry-run]     intelcost-market-next
 #
-# Pushes the app or api repo's umer-dev to origin umer-dev, and only when every gate exited 0 on exactly the tree it
-# sends. A merge, cherry-pick, revert or rebase makes commits no gate read; this is where they are caught.
+# Pushes the repo's umer-dev to origin umer-dev, and only when every gate exited 0 on exactly the tree it sends.
+# A merge, cherry-pick, revert or rebase makes commits no gate read; this is where they are caught.
 #
 #   1. Refuses unless: the repo is on umer-dev; nothing is staged, unstaged or untracked (not ignored); no merge,
 #      rebase, cherry-pick, revert or am is in progress; no quantity table is running. So the working tree is
 #      exactly HEAD's tree.
-#   2. A gate pass stamp E:\Intelcost\.private\gate-pass\<app|api>-<HEAD's tree> at most 24 h old (gate-commit.sh
+#   2. A gate pass stamp E:\Intelcost\.private\gate-pass\<kind>-<HEAD's tree> at most 24 h old (gate-commit.sh
 #      writes it, for a commit or --verify-head) is used as it is. Without one, it runs
-#      `gate-commit.sh <app|api> --owner D-NNNN --verify-head`: every gate on HEAD, every exit code read; any non-zero
-#      stops here, nothing is pushed.
+#      `gate-commit.sh <kind> --owner D-NNNN --verify-head`: every gate on HEAD, every exit code read; any non-zero
+#      stops here, nothing is pushed. The gates per repo are listed in gate-commit.sh (infra: shell, node and python
+#      syntax, the names scan, no private file, a QT pass when the range touches its inputs; market: lint, build).
 #   3. Checks HEAD and the stamp again, then `git push [--dry-run] origin umer-dev`. Never a force, never another
 #      branch: a remote that moved on (non fast-forward) is refused by git itself; merge it in and run this again.
 #
-# The founder gate hook refuses a plain `git push` in the app or api repo without that stamp, and any other form.
+# The founder gate hook refuses a plain `git push` in any of the four repos without that stamp, and any other form.
 
 set -u
 set -o pipefail
@@ -32,7 +36,9 @@ shift || true
 case "$kind" in
   app) repo="$root/intelcost-app-react" ;;
   api) repo="$root/intelcost-app-fastapi" ;;
-  *) echo "usage: gate-push.sh app|api --owner D-NNNN [--dry-run]" >&2; exit 2 ;;
+  infra) repo="$here" ;;
+  market) repo="$root/intelcost-market-next" ;;
+  *) echo "usage: gate-push.sh app|api|infra|market --owner D-NNNN [--dry-run]" >&2; exit 2 ;;
 esac
 owner=''
 dry=()

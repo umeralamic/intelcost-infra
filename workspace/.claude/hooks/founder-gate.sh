@@ -32,6 +32,10 @@
 #   - The QT inputs of the infra commit rule now include lock.sh, gate-commit.sh, gate-push.sh, qt-key.sh and the
 #     hook mirror workspace/.claude/hooks/ (qt-key.sh hashes these live hooks under their mirror paths).
 #
+# D-1381 (the founder's D-1380 Q9): the push rule above covers all four repos: app, api, infra (the workspace mirror
+# is in it) and the marketing site (intelcost-market-next), with stamps infra-<tree> and market-<tree> written by
+# `intelcost-infra/gate-push.sh infra|market --owner D-NNNN` (gate-commit.sh --verify-head lists their gates).
+#
 # Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr), as the rule 7 and D-592 hooks do.
 # Each refusal is appended to .private/founder-gate.log.
 
@@ -80,9 +84,9 @@ if [ "$what" = '?' ]; then
     refuse "a git commit (the call could not be read)" \
       "Blocked by D-1367: a git commit in the app, api or infra repo, and this hook could not read the call to check its gate pass. Commit with intelcost-infra/gate-commit.sh (app, api) or as a plain git commit the hook can read."
   fi
-  if printf '%s' "$input" | grep -Eiq 'intelcost-app-(react|fastapi)' && printf '%s' "$input" | grep -Eiq '\bgit\b[^"]*\bpush\b'; then
+  if printf '%s' "$input" | grep -Eiq 'intelcost-(app-react|app-fastapi|infra|market-next)' && printf '%s' "$input" | grep -Eiq '\bgit\b[^"]*\bpush\b'; then
     refuse "a git push (the call could not be read)" \
-      "Blocked by D-1373: a git push in the app or api repo, and this hook could not read the call to check its gate pass. Push with intelcost-infra/gate-push.sh app|api --owner <your D-number>."
+      "Blocked by D-1373/D-1381: a git push in the app, api, infra or marketing repo, and this hook could not read the call to check its gate pass. Push with intelcost-infra/gate-push.sh app|api|infra|market --owner <your D-number>."
   fi
 fi
 
@@ -102,7 +106,7 @@ if [ -n "$commits" ]; then
     fi
     if [ "$tag" = PUSHBAD ]; then
       refuse "git push in $kind with $arg" \
-        "Blocked by D-1373: a git push in the $kind repo with $arg. The only push the gate reads is
+        "Blocked by D-1373/D-1381: a git push in the $kind repo with $arg. The only push the gate reads is
   git push origin umer-dev            (or with --dry-run, -v, -q, --porcelain; never a force, never another ref)
 and it needs a gate pass on the tree it sends. From intelcost-infra/ run:
   ./gate-push.sh $kind --owner <your D-number> [--dry-run]"
@@ -111,7 +115,7 @@ and it needs a gate pass on the tree it sends. From intelcost-infra/ run:
       tree=$(git -C "$arg" rev-parse --verify -q 'umer-dev^{tree}' 2>/dev/null)
       if [ -z "$tree" ] || ! fresh "$pass/$kind-$tree"; then
         refuse "git push in $kind, no gate pass for umer-dev's tree ${tree:-?}" \
-          "Blocked by D-1373: a git push in the $kind repo needs every gate to have exited 0 on exactly the tree it sends
+          "Blocked by D-1373/D-1381: a git push in the $kind repo needs every gate to have exited 0 on exactly the tree it sends
 (umer-dev's tree ${tree:0:12}), and there is no pass for it in the last 24 h: a merge, cherry-pick, revert or rebase
 made a commit no gate read, or the gates have not run on it. From intelcost-infra/ run:
   ./gate-push.sh $kind --owner <your D-number> [--dry-run]

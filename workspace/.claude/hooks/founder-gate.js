@@ -2,8 +2,8 @@
 // would touch that the gate covers ("a save to <path>", "a bench migration (...)", "git <sub> in <repo>"), or
 // nothing when the call is not gated. Prints "?" when it cannot read the call; the shell half then falls back to
 // a plain pattern check. Data in, text out: it never blocks by itself. After that first line, one line per
-// `git commit` in the app, api or infra repo (D-1367, commitsOf below), and one per `git push` in the app or api
-// repo (D-1373), for the shell half's pass-stamp check.
+// `git commit` in the app, api or infra repo (D-1367, commitsOf below), and one per `git push` in the app, api,
+// infra or marketing repo (D-1373, D-1381), for the shell half's pass-stamp check.
 //
 // Gated:
 //   - Edit, Write, MultiEdit, NotebookEdit on app or api source (APP and API below).
@@ -310,14 +310,14 @@ function writes(cmd, cwd) {
   return "";
 }
 
-// ---- git commit in the app, api or infra repo (D-1367); git push in the app or api repo (D-1373) ---------
+// ---- git commit in the app, api or infra repo (D-1367); git push in any of our four repos (D-1373, D-1381) --
 
 // One line per `git commit` the command runs in one of the three repos:
 //   COMMIT\t<app|api|infra>\t<dir>     the shell half checks the pass stamp for the staged tree
 //   COMMITBAD\t<app|api|infra>\t<why>  a commit of a tree other than the staged one (-a, -i, -o, a pathspec)
-// and one per `git push` in the app or api repo:
-//   PUSH\t<app|api>\t<dir>             the shell half checks the pass stamp for the tree of the local umer-dev
-//   PUSHBAD\t<app|api>\t<why>          any form other than `git push [-n|--dry-run|-v|-q|--porcelain] origin umer-dev`
+// and one per `git push` in the app, api, infra or marketing repo (D-1381):
+//   PUSH\t<app|api|infra|market>\t<dir>      the shell half checks the pass stamp for the tree of the local umer-dev
+//   PUSHBAD\t<app|api|infra|market>\t<why>   any form other than `git push [-n|--dry-run|-v|-q|--porcelain] origin umer-dev`
 const INFRA = /(^|\/)intelcost-infra(\/|$)/;
 function commitsOf(call) {
   const tool = String(call.tool_name || "");
@@ -356,9 +356,8 @@ function commitsOf(call) {
       }
       const sub = (args[i] || "").toLowerCase();
       if (sub === "push") {
-        const pm = dir.match(/intelcost-app-(react|fastapi)/);
-        if (!pm || !REPO.test(dir)) continue;
-        const kind = pm[0] === "intelcost-app-react" ? "app" : "api";
+        const kind = pushKind(dir);
+        if (!kind) continue;
         const why = pushOther(args.slice(i + 1));
         out.push(why ? `PUSHBAD\t${kind}\t${why}` : `PUSH\t${kind}\t${dir}`);
         continue;
@@ -372,6 +371,19 @@ function commitsOf(call) {
     }
   }
   return out;
+}
+
+// The repo a push runs in (D-1381: all four of ours), by the innermost repo folder named in its directory, or "".
+const PUSH_REPOS = {
+  "intelcost-app-react": "app",
+  "intelcost-app-fastapi": "api",
+  "intelcost-infra": "infra",
+  "intelcost-market-next": "market",
+};
+function pushKind(dir) {
+  const segs = String(dir).split("/");
+  for (let k = segs.length - 1; k >= 0; k--) if (PUSH_REPOS[segs[k]]) return PUSH_REPOS[segs[k]];
+  return "";
 }
 
 // Why a push is not the one form the gate reads (D-1373), or "". Fail closed: anything else is refused.

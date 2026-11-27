@@ -8,6 +8,7 @@
 #                            under their mirror paths workspace/.claude/hooks/<name>.
 #   ./qt-key.sh --index      the files as staged: what a commit would record (the hooks as the staged mirror copies)
 #   ./qt-key.sh --touches    exit 0 when the staged changes touch one of these files (else 1)
+#   ./qt-key.sh --names-touch   exit 0 when a path on stdin is one of these files (D-1381, the infra push gate)
 #
 # A QT that exits 0 with 0 FAIL lines writes E:\Intelcost\.private\gate-pass\qt-<key> (its --worktree key, the same
 # at its start and its end); the founder gate hook lets an infra commit that touches one of these files through only
@@ -39,5 +40,9 @@ case "${1:-}" in
     done | LC_ALL=C sort -u -k2 | git hash-object --stdin ;;
   --touches)
     git diff --cached --name-only | grep -Eq "$RE" ;;
-  *) echo "usage: qt-key.sh --worktree | --index | --touches"; exit 2 ;;
+  --names-touch)
+    # D-1381: exit 0 when one of the repo paths on stdin (one a line) is one of these files (the infra push gate
+    # reads the pushed range's names this way).
+    grep -Eq "$RE" ;;
+  *) echo "usage: qt-key.sh --worktree | --index | --touches | --names-touch"; exit 2 ;;
 esac

@@ -23,6 +23,21 @@
 # --verify-head (D-1373) also refuses when anything is staged or a merge, rebase, cherry-pick, revert or am is in
 # progress, so the working tree the gates read is exactly HEAD's tree; the stamp is then HEAD's tree, which the hook
 # needs before a `git push` of umer-dev.
+#
+# D-1381 (the founder's D-1380 Q9): infra and market (intelcost-market-next) take --verify-head only (their commits
+# stay plain `git commit`; their gate is at the push, gate-push.sh):
+#   ./gate-commit.sh infra --owner D-1381 --verify-head
+#   ./gate-commit.sh market --owner D-1381 --verify-head
+# infra: bash -n of every tracked *.sh; node --check of every tracked *.js, *.mjs, *.cjs; a Python syntax check
+# (ast.parse, nothing written) of every tracked *.py in a throwaway python:3.14-slim container (--pull never,
+# --network none, the repo mounted read-only; python is not on the host); the names scan (every tracked path and
+# text file, substring, any case, against the client and book lists; office files unpacked: a hit refuses when the
+# push adds or changes that file, a hit in one already on origin/umer-dev unchanged is a WARN; counts only, the file
+# list in E:\Intelcost\.private\gate-scan-infra.txt); no private file tracked (.private/, .locks/, the guard list,
+# the denylists, the stamps, a .env other than *.example); and, when the pushed range (origin/umer-dev..HEAD) touches
+# a quantity-table input, a QT pass for HEAD's files (qt-<qt-key.sh --index>, at most 24 h old).
+# market: npm run lint, npm run build (never prettier). The bench's marketing service runs `next dev` with .next in a
+# container volume, so a host build reloads nothing it serves.
 
 set -u
 set -o pipefail
@@ -37,7 +52,10 @@ shift || true
 case "$repo_kind" in
   app) repo="$root/intelcost-app-react" ;;
   api) repo="$root/intelcost-app-fastapi" ;;
-  *) echo "usage: gate-commit.sh app|api --owner D-NNNN [--dry-run | --verify-head] (-m msg ... | -F file)" >&2; exit 2 ;;
+  infra) repo="$here" ;;
+  market) repo="$root/intelcost-market-next" ;;
+  *) echo "usage: gate-commit.sh app|api --owner D-NNNN [--dry-run | --verify-head] (-m msg ... | -F file)
+       gate-commit.sh infra|market --owner D-NNNN --verify-head" >&2; exit 2 ;;
 esac
 owner=''
 dry=''
@@ -55,6 +73,9 @@ done
 [ -n "$owner" ] || die "--owner D-NNNN is required (the heavy lock's owner)"
 [ -n "$dry" ] || [ ${#msg[@]} -gt 0 ] || die "a commit message is required (-m or -F), or --dry-run"
 [ -z "$verify_head" ] || [ ${#msg[@]} -eq 0 ] || die "--verify-head makes no commit: no -m or -F"
+case "$repo_kind" in
+  infra|market) [ -n "$verify_head" ] || die "$repo_kind takes --verify-head only (its commits are plain git commits; its gate runs at the push, gate-push.sh)" ;;
+esac
 
 cd "$repo" || die "no repo at $repo"
 branch="$(git branch --show-current)"
@@ -102,7 +123,130 @@ gate() {
   [ "$rc" -eq 0 ] || die "gate $name exited $rc: no pass stamp, no commit"
 }
 
-if [ "$repo_kind" = app ]; then
+# ---- the infra gate (D-1381) ------------------------------------------------------------------------------
+infra_sh() { # bash -n of every tracked *.sh
+  local f n=0 bad=0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    n=$((n + 1))
+    bash -n "$f" || { echo "  bash -n failed: $f"; bad=$((bad + 1)); }
+  done < <(git -c core.quotePath=false ls-files -- '*.sh')
+  echo "  $n shell scripts, $bad with a syntax error"
+  [ "$n" -gt 0 ] && [ "$bad" -eq 0 ]
+}
+infra_js() { # node --check of every tracked *.js, *.mjs, *.cjs (8 at a time)
+  local n bad out
+  n=$(git ls-files -- '*.js' '*.mjs' '*.cjs' | grep -c .)
+  out=$(git ls-files -z -- '*.js' '*.mjs' '*.cjs' |
+    xargs -0 -P 8 -n 1 sh -c 'node --check "$1" >/dev/null 2>&1 || echo "NODECHECKFAIL $1"' _)
+  bad=$(printf '%s\n' "$out" | grep -c '^NODECHECKFAIL ')
+  printf '%s\n' "$out" | grep '^NODECHECKFAIL ' | sed 's/^NODECHECKFAIL /  node --check failed: /'
+  echo "  $n script files, $bad with a syntax error"
+  [ "$n" -gt 0 ] && [ "$bad" -eq 0 ]
+}
+infra_py() { # ast.parse of every tracked *.py, in a throwaway python container (python is not on the host)
+  local img=python:3.14-slim
+  docker image inspect "$img" >/dev/null 2>&1 || { echo "  no local image $img (docker pull it once)"; return 1; }
+  git -c core.quotePath=false ls-files -- '*.py' |
+    MSYS_NO_PATHCONV=1 docker run --rm -i --pull never --network none -v "$(cygpath -m "$repo"):/src:ro" -w /src "$img" \
+      python -c '
+import ast, sys
+names = [l for l in sys.stdin.read().splitlines() if l]
+bad = 0
+for p in names:
+    try:
+        with open(p, "rb") as f:
+            ast.parse(f.read(), p)
+    except (SyntaxError, ValueError) as e:
+        bad += 1
+        print("  syntax error: %s line %s" % (p, getattr(e, "lineno", "?")))
+print("  %d python files, %d with a syntax error" % (len(names), bad))
+sys.exit(1 if bad or not names else 0)'
+}
+infra_names() { # the client and book names: counts only on screen, the file list in .private (never a term)
+  local pats scan base n_path n_text office_new=0 office_old=0 f c list
+  local priv="${INTELCOST_PRIVATE:-$root/.private}"
+  scan="$priv/gate-scan-infra.txt"
+  pats=$(mktemp)
+  for list in "$priv/client-denylist.txt" "$priv/book-denylist.txt"; do
+    [ -s "$list" ] || { rm -f "$pats"; echo "  missing or empty name list: ${list##*/}"; return 1; }
+    tr -d '\r' <"$list" | grep -v '^[[:space:]]*#' | sed 's/[[:space:]]*$//' | grep -v '^$' >>"$pats"
+  done
+  # The names live only in those private files (no name is written here; the client list holds every one ordered).
+  base=$(git rev-parse --verify -q refs/remotes/origin/umer-dev)
+  {
+    echo "# D-1381 names scan of infra HEAD $(git rev-parse --short HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ): files only"
+    git -c core.quotePath=false ls-files | grep -i -F -f "$pats" | sed 's/^/path: /'
+    git -c core.quotePath=false grep -l -I -i -F -f "$pats" HEAD -- . | sed 's/^HEAD:/text: /'
+  } >"$scan"
+  n_path=$(grep -c '^path: ' "$scan")
+  n_text=$(grep -c '^text: ' "$scan")
+  while IFS= read -r f; do
+    [ -f "$f" ] || continue
+    c=$(unzip -p "$f" 2>/dev/null | grep -a -o -i -F -f "$pats" | grep -c .)
+    [ "$c" -gt 0 ] || continue
+    if [ -n "$base" ] && git cat-file -e "$base:$f" 2>/dev/null && git diff --quiet "$base" HEAD -- "$f"; then
+      office_old=$((office_old + 1))
+      echo "office, on origin unchanged ($c hits): $f" >>"$scan"
+    else
+      office_new=$((office_new + 1))
+      echo "office, added or changed by this push ($c hits): $f" >>"$scan"
+    fi
+  done < <(git -c core.quotePath=false ls-files -- '*.xlsx' '*.xlsm' '*.docx' '*.pptx')
+  rm -f "$pats"
+  echo "  names: $n_path paths, $n_text text files, $office_new office files added or changed by this push; list: .private/${scan##*/}"
+  [ "$office_old" -eq 0 ] ||
+    echo "  WARN: $office_old office file(s) already on origin/umer-dev, unchanged, carry a listed name (not refused; a question for the founder)"
+  [ "$n_path" -eq 0 ] && [ "$n_text" -eq 0 ] && [ "$office_new" -eq 0 ]
+}
+infra_private() { # nothing private tracked
+  local hits
+  hits=$(git -c core.quotePath=false ls-files |
+    grep -E -i '(^|/)\.(private|locks)(/|$)|(^|/)(guard-list[^/]*\.json(\.bak[^/]*)?|client-denylist[^/]*|book-denylist[^/]*|founder-quiet\.stamp|founder-gate\.log|catalog-convert-patterns\.json|screen-names\.json|fx-protected-ids\.json)$|(^|/)\.env($|\.)' |
+    grep -v -E '\.example$')
+  if [ -n "$hits" ]; then
+    printf '  tracked private file: %s\n' $hits
+    return 1
+  fi
+  echo "  no .private/, .locks/, private list, stamp or .env (other than *.example) tracked"
+}
+infra_qt() { # a QT pass for HEAD's files when the pushed range touches a quantity-table input
+  local base key
+  base=$(git rev-parse --verify -q refs/remotes/origin/umer-dev)
+  if [ -n "$base" ]; then
+    if ! git diff --name-only "$base" HEAD | bash "$here/qt-key.sh" --names-touch; then
+      echo "  the pushed range (origin/umer-dev ${base:0:12}..HEAD) touches no quantity-table input"
+      return 0
+    fi
+  fi
+  key=$(bash "$here/qt-key.sh" --index) || { echo "  qt-key.sh --index failed"; return 1; }
+  if fresh_pass "$PASS_DIR/qt-$key"; then
+    echo "  the pushed range touches quantity-table inputs; a QT passed on HEAD's files (qt-${key:0:12})"
+    return 0
+  fi
+  echo "  the pushed range ${base:+(origin/umer-dev ${base:0:12}..HEAD) }touches quantity-table inputs and no quantity table"
+  echo "  passed (exit 0, 0 FAIL) on HEAD's files in the last 24 h (key ${key:0:12}). Run from intelcost-infra/:"
+  echo "    QT_OWNER=<your D-number> ./quantity-table.sh"
+  return 1
+}
+fresh_pass() { # <file>: exists and at most 24 h old (the hook's own test)
+  [ -f "$1" ] || return 1
+  local t
+  t=$(date -r "$1" +%s 2>/dev/null) || return 1
+  [ $(($(date -u +%s) - t)) -le 86400 ]
+}
+
+if [ "$repo_kind" = infra ]; then
+  gate shell_syntax infra_sh
+  gate node_check infra_js
+  gate python_syntax infra_py
+  gate names infra_names
+  gate private_files infra_private
+  gate qt_pass infra_qt
+elif [ "$repo_kind" = market ]; then
+  gate lint npm run lint
+  gate build npm run build
+elif [ "$repo_kind" = app ]; then
   gate lint npm run lint
   gate typecheck npm run typecheck
   gate build npm run build
