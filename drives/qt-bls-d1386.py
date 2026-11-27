@@ -23,6 +23,17 @@ Worked by hand (DECISIONS D-1385, D-1386):
 6. A refusal that quotes the key ("... allocated to the user with registration key <key> has been reached.") reads
    "... with registration key (the key) has been reached." once, the key nowhere; a refresh whose first call is refused
    says the areas still waiting are left (171 before the metro load), not none.
+
+D-1392 (2026-12-03, item 1): OEWS from BLS's published May 2025 files (`test-data-local/wage/bls/oesm25ma.zip`,
+`oesm25st.zip`), no BLS call:
+7. The files' verify against every row loaded (read only): 579 areas loaded and in the files (51 states, 135 nonmetro,
+   393 metros), 9,510 rows compared (6,741 loaded by the API + 2,769 loaded from the files), 0 differences; the one
+   loaded area the files lack is the national (no national file placed: its 34 API rows kept).
+8. The 171 metros came from the files: one load record of kind oews whose source names the files and "171 areas", 2,769
+   rows, survey May 2025; median and p75 only: the metro rows carrying a mean stay the 295 the API loaded before.
+9. Areas still to load for May 2025: 0 (the card's "0 still to load").
+10. The data file re-exported after the load is current: an export to /tmp gives byte for byte the committed file, and
+    its sha256 is the one in `bls_refdata.json.sha256`.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -202,11 +213,53 @@ def main() -> int:
           (waiting, 0, 0, "BlsError"))
     rows += 2
 
+    # 7-10 (D-1392): the published files, read only
+    from datetime import date
+
+    may25 = date(2025, 5, 1)
+    files = [p for p, s in bls_load.oews_files() if s == may25]
+    found: dict = {}
+    for path in files:
+        found.update(bls_load.read_oews_file(path, socs)[1])
+    with sync_engine.connect() as conn:
+        fc = bls_load.verify_oews_file(conn, may25, found)
+        kinds = dict(conn.execute(text(
+            "SELECT kind, count(*) FROM refdata.ref_oews_area a WHERE vintage = (SELECT max(vintage) FROM "
+            "refdata.ref_oews_area) AND EXISTS (SELECT 1 FROM refdata.ref_oews o WHERE o.area_type = 'M' AND "
+            "o.area_code = a.area_code AND o.survey_month = :m) GROUP BY kind"), {"m": may25}).all())
+        states = conn.execute(text("SELECT count(DISTINCT area_code) FROM refdata.ref_oews WHERE area_type = 'S' "
+                                   "AND survey_month = :m"), {"m": may25}).scalar()
+        rec = conn.execute(text(
+            "SELECT kind, rows, data_as_of, source LIKE '%, 171 areas' FROM refdata.ref_bls_load "
+            "WHERE source LIKE 'BLS file %' ORDER BY id")).all()
+        means = conn.execute(text("SELECT count(*) FROM refdata.ref_oews WHERE area_type = 'M' AND mean IS NOT NULL "
+                                  "AND survey_month = :m"), {"m": may25}).scalar()
+        left = len(bls_load.pending_areas(conn, may25))
+    check(wrong, "d1392-file-verify",
+          (sorted(p.name for p in files), fc.areas, states, kinds, fc.rows, fc.differences, fc.not_in_files),
+          (["oesm25ma.zip", "oesm25st.zip"], 579, 51, {"metro": 393, "nonmetro": 135}, 9510, 0, [("N", "0000000")]))
+    check(wrong, "d1392-file-loaded-metros", ([tuple(r) for r in rec], means), ([("oews", 2769, may25, True)], 295))
+    check(wrong, "d1392-areas-left", left, 0)
+    rows += 3
+
+    out_path = Path("/tmp/qt-bls-d1392.json")
+    try:
+        with sync_engine.begin() as conn:
+            checksum, _ = bls_load.export_file(conn, out_path)
+        same = out_path.read_bytes() == data
+    finally:
+        out_path.unlink(missing_ok=True)
+        bls_load.checksum_path(out_path).unlink(missing_ok=True)
+    committed = bls_load.checksum_path(bls_load.DATA_FILE).read_text(encoding="utf-8").split()[0]
+    check(wrong, "d1392-file-export-checksum", (same, checksum == committed), (True, True))
+    rows += 1
+
     for w in wrong:
         print(w)
-    print(f"BLS packed calls and the data file (D-1385, D-1386): {rows} rows, "
+    print(f"BLS packed calls, the data file and the published May files (D-1385, D-1386, D-1392): {rows} rows, "
           f"{'all right' if not wrong else f'{len(wrong)} wrong'} (171 metros 240 -> 233 calls; full survey "
-          f"{len(everything)} areas 790 calls; file {len(data)} bytes, {sum(t['count'] for t in body['tables'])} rows)")
+          f"{len(everything)} areas 790 calls; file {len(data)} bytes, {sum(t['count'] for t in body['tables'])} rows; "
+          f"May 2025 files: {fc.rows} rows equal, {left} areas left, sha256 {committed[:12]})")
     return 1 if wrong else 0
 
 
