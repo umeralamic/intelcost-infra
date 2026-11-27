@@ -253,6 +253,11 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1369.py
 # "Rates updated"; a rule's own change taken off the after set for its dollars) and its foreman priced from the stored
 # rows (the api's own foreman to the cent, half to even); the record keeps the rule's part and the move's time; by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1375b.py" </dev/null || { echo "FAIL  wage note by its cause (above)"; exit 1; }
+# D-1382 (wage rules 12, local wage areas): BLS's May 2025 area definitions as loaded (every county in one area, Southern
+# Ohio's 12 counties, no micro area, Connecticut by planning region); Gallia's laborer 23.96 on its nonmetro area by 12 and
+# Ohio statewide by 11; the state scaled by the area's ratio; Harris the same by 11 and 12; a pre-2022 Connecticut county
+# on its ZIP's planning region; rules-11 figures unmoved by the load; a newly loaded metro; the wages_12 note; by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1382.py" </dev/null || { echo "FAIL  local wage areas (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
