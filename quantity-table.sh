@@ -258,6 +258,10 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-rulenote-d1375b.p
 # Ohio statewide by 11; the state scaled by the area's ratio; Harris the same by 11 and 12; a pre-2022 Connecticut county
 # on its ZIP's planning region; rules-11 figures unmoved by the load; a newly loaded metro; the wages_12 note; by hand.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1382.py" </dev/null || { echo "FAIL  local wage areas (above)"; exit 1; }
+# D-1383 (wage rules 13, shared machine lines): a split pair whose class line names several machines is no split (Florida's
+# backhoe/excavator/trackhoe line against its bulldozer line: the Miami dozer at its class level, $29.01, by 13; a real
+# pair by 12); a single-machine class line and a real pair as before; the wages_13 note and its cause key; by hand.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-wages-d1383.py" </dev/null || { echo "FAIL  shared machine lines (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.

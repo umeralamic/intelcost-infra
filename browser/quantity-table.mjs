@@ -147,7 +147,12 @@ try {
     const haulMod = await import("/src/lib/estimate/equipment/haul.ts");
     const siteMats = await import("/src/lib/takeoff/earthwork/utilities/materials.ts");
     const retiredLines = await import("/src/lib/estimate/retired.ts");
+    const wageText = await import("/src/features/wage-calculator/text.ts");
     return cases.map((c) => {
+      if (c.kind === "rate-cell") {
+        // D-1383 (the founder's D-1380 Q8): the Update rates dialog's cells, a dash for a craft one set lacks.
+        return { stored: wageText.rateCell(null), next: wageText.rateCell(c.next), change: wageText.rateChange(null, c.next), lost: wageText.rateChange(c.stored, null), moved: wageText.rateChange(c.stored, c.next), same: wageText.rateChange(c.next, c.next) };
+      }
       if (c.kind === "retired") {
         // D-1338 (D-1335 Q2): a retired line counts $0 in the total; Needs attention names what it had.
         const priced = c.lines.map((l) => costing.computeLineCost({ quantity: l.quantity, unit: l.unit, input: l.input, unitWastage: new Map(), components: (l.components ?? []).map((row) => comps.evaluateComponent(row, { parent: 0, qty: l.quantity })), netQty: l.quantity }));

@@ -643,4 +643,14 @@ export const COST_CASES = [
     lines: [{ name: "Trench dewatering, sump pumping", retired: false, quantity: 0, unit: "LF", input: rates({ subcontract_cost: 5000 }), components: [component("material", { pricing_mode: "lump", qty_formula: "1", unit_price: 500 })] }],
     expect: { before: 5500, total: 5500, retiredRow: 5500, excluded: 0, note: "", subcontract: 5000 },
   },
+  // D-1383 (the founder's D-1380 Q8): the Update rates dialog shows a dash, not "None", for a craft the old set lacked
+  // (P10's Tile Finisher and Tile Setter): Stored "—", New "$29.01", Change "—"; a craft the new set lacks the
+  // same; a moved craft 30.30 -> 29.01 "−$1.29"; an unmoved one "0".
+  {
+    id: "update-rates-dash",
+    kind: "rate-cell",
+    stored: 30.3,
+    next: 29.01,
+    expect: { stored: "—", next: "$29.01", change: "—", lost: "—", moved: "−$1.29", same: "0" },
+  },
 ];
