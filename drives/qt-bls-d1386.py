@@ -20,6 +20,9 @@ Worked by hand (DECISIONS D-1385, D-1386):
    `PRODUCTION=true` on local, `calls_allowed` is False and `bls.series` and the refresh refuse with the bench-only
    words before any request (the key as the bench holds it); on the bench's own settings it is True. The script's
    import refuses on the bench without `--on-bench`.
+6. A refusal that quotes the key ("... allocated to the user with registration key <key> has been reached.") reads
+   "... with registration key (the key) has been reached." once, the key nowhere; a refresh whose first call is refused
+   says the areas still waiting are left (171 before the metro load), not none.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -156,6 +159,48 @@ def main() -> int:
 
     check(wrong, "d1386-import-refused-on-bench", script._import([]), 2)
     rows += 3
+
+    # 6
+    secret = settings.bls_api_key.get_secret_value() if settings.bls_api_key else "no-key"
+
+    class _Answer:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return {"status": "REQUEST_NOT_PROCESSED", "message": [
+                f"Request could not be serviced, as the daily threshold for total number of requests allocated to "
+                f"the user with registration key {secret} has been reached."]}
+
+    httpx.post = lambda *_a, **_k: _Answer()
+    try:
+        bls.series(["OEUN000000000000047206108"], 2025, 2025)
+        said = "not refused"
+    except bls.BlsError as exc:
+        said = str(exc)
+    finally:
+        httpx.post = no_request
+    check(wrong, "d1386-refusal-redacted-once", (secret in said, said),
+          (False, "Request could not be serviced, as the daily threshold for total number of requests allocated to "
+                  "the user with registration key (the key) has been reached."))
+
+    def refused_fetch(*_a: object, **_k: object) -> dict:
+        raise bls.BlsError("daily threshold reached")
+
+    real_fetch = bls_load._fetch
+    bls_load._fetch = refused_fetch
+    try:
+        out1 = bls_load.refresh(sync_engine)
+    finally:
+        bls_load._fetch = real_fetch
+    with sync_engine.connect() as conn:
+        from sqlalchemy import text
+
+        latest = conn.execute(text("SELECT max(survey_month) FROM refdata.ref_oews")).scalar()
+        waiting = len(bls_load.pending_areas(conn, latest))
+    check(wrong, "d1386-refresh-refused-left", (out1.left, out1.calls, out1.oews, (out1.stopped or "")[:8]),
+          (waiting, 0, 0, "BlsError"))
+    rows += 2
 
     for w in wrong:
         print(w)
