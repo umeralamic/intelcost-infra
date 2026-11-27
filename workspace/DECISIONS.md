@@ -38500,3 +38500,138 @@ marketing). Full QT 13:26:15-13:45:45 exit 0, 0 FAIL (qt-ba8e7f23c1e8). Fingerpr
 The founder's answers relayed during the close-out are D-1389 (OEWS from BLS's published May data file, no second key,
 the API for top-ups) and D-1390 (hard rule 14, bulk files not APIs). NEXT-RUN: 1 the 171 metros from the founder's placed
 files, 2 the Next.js upgrade, 3 an audit (report only) of every external source.
+
+## D-1391
+### D-1391 — The 12-03 run brief (2026-11-27, logged 13:57 UTC)
+The founder's order: "The BLS files are placed in E:\Intelcost\test-data-local\wage\bls\ (oesm25ma.zip, oesm25st.zip,
+area_definitions_m2025.xlsx). Run NEXT-RUN.md item 1 from these files (no API calls, no browser download): import, verify
+every API-loaded row matches the file exactly, load the 171 metros, re-export the data file, re-price the 16-ZIP table,
+list founder Update-rates moves (real bids first). Then item 2 (Next.js upgrade). Standard rules; close out; one push per
+repo; short report in morning-report-2026-12-03." Plus the founder's AUDIT (report only, in the 12-03 report): every
+external source the app or scripts call (BLS OEWS/ECI/PPI, NOAA normals, Census geocoder, EIA, SAM.gov, any other): its
+limit, our calls per load, whether a bulk file exists (name, URL, size), and the proposed switch; build nothing yet.
+Items: 1 D-1392 (OEWS from the placed files; the 171 metros), 2 D-1393 (Next.js 16.4.6, eslint-config-next 16.4.6, zod
+>= 4.6.6 in marketing; the founder's "go" is this order), 3 D-1394 (the external-sources audit, report only; no calls).
+Start: digest eacd2a92b3e281e2 = baseline (13:55 UTC); locks free; repos even with origin (app dbfb7a9, api 78224cb,
+infra 752b0ad, market 1f0be38); alembic head d1382a7c4e10; wage rules 13.
+
+## D-1393 — Night run 2026-12-03, item 2: Next.js 16.4.6 and zod 4.6.7 in the marketing site (D-1391, the founder's go)
+
+**Status:** Accepted (2026-11-27, the night run's builder B, from the founder's D-1391 order). Clears the build's
+SecurityFatalError of REPORT_2026-12-02 section 4.
+
+- **What:** in `intelcost-market-next` (umer-dev), `next` and `eslint-config-next` to **16.4.6**, pinned exact (no
+  caret) so the two stay equal; `zod` to **^4.6.7** (latest 4.x, >= 4.6.6; caret kept as zod had it). By
+  `npm install <pkg>@<ver>` only, under the heavy lock; not `next upgrade`, and no instruction printed by a tool is
+  followed. Nothing else in package.json changes; the lockfile changes as npm resolves.
+- **Proof:** `npm audit --omit=dev` (read only) shows no critical or high for next or zod; `gate-commit.sh market
+  --owner D-1393 --verify-head` (names, lint, build) all 0 on the committed tree; a smoke of the home page and one
+  other page in the Playwright MCP.
+- **The bench's marketing service** keeps `node_modules` in a container volume and runs `npm ci` only when it starts
+  with a changed lockfile, so the host install reloads nothing there and it keeps serving 16.4.0 until its next start
+  (not restarted tonight, hard rule 11). **My interpretation:** the smoke therefore also runs the host build with
+  `next start` on a spare port (own PID, stopped by that PID) to show 16.4.6 itself renders.
+- **Commit:** marketing commits are plain `git commit -F <file>` (D-1381), made after the gates pass on the staged
+  tree; no push (the close-out pushes through gate-push.sh).
+
+## D-1392 — Night run 2026-12-03, item 1: OEWS from BLS's published May files; verify the API rows, then the 171 metros (D-1389, D-1390, D-1391 item 1)
+
+**The builder's readings, logged before any code (2026-11-27 ~14:05 UTC).** No BLS API call, no download.
+- **The files:** `test-data-local/wage/bls/oesm25ma.zip` (inside: `MSA_M2025_dl.xlsx` metros, `BOS_M2025_dl.xlsx`
+  nonmetro areas) and `oesm25st.zip` (`state_M2025_dl.xlsx`), seen by the api at `/test-data-local/wage/bls/` (read-only
+  mount). Untrusted data: parsed only (stdlib zip + XML, streamed). Columns AREA, AREA_TYPE (1 national, 2 state,
+  3 territory, 4 metro, 6 nonmetro), I_GROUP (cross-industry only), OCC_CODE, H_MEAN, H_MEDIAN, H_PCT75: the hourly
+  figures the API's datatypes 03, 08, 09 carry. A figure is rounded to the cent (the file holds binary floats such as
+  64.739999999999995). The markers `*` (not available), `**`, `#` (at or above the top of the published range), `~`
+  and a blank give **no figure**, as the API gives none (`_answer` drops "" and "-"); a row is written only when it has
+  a figure. Area codes as the series id: national 0000000, state FIPS + 00000, metro 00 + CBSA, nonmetro its 7 digits.
+  Survey month May of the year in `_M<year>_dl`. **No national file is placed:** the national rows stay as the API
+  loaded them (34), and the verify says so.
+- **Command:** `scripts/bls_load.py oews-file <zip>... [--verify-only] [--areas missing|all]` (the existing script; no
+  new file under scripts/). Code in `app/wagecalc/bls_load.py`: `read_oews_file`, `verify_oews_file`, `load_oews_file`.
+  The 34 mapped SOCs. **Verify first, always, read only:** every row already loaded for an area the files cover equals
+  the file's (median and p75 exactly; the mean too where a row holds one), every file row with a median or p75 for such
+  an area is loaded, and the counts are equal. Any difference refuses the load (exit 1) and prints the count and a few
+  examples; nothing is overwritten. Then `--areas missing` (default) loads the defined areas with no row of the file's
+  survey, **median and p75 only** (mean left empty, as the API loads of D-1382/D-1385), in one transaction, with one
+  `ref_bls_load` row: kind `oews`, source `BLS file oesm25ma.zip, N areas` (the file, not the API). `--areas all`
+  re-writes nothing already equal; it exists only to name the scope and loads the same missing areas.
+- **Refresh (D-1389):** when published May files for a survey at least as new as the loaded one are in the bench's
+  `test-data-local/wage/bls/`, the press first loads the pending areas from them (verify first; a difference stops the
+  press with the count, no row written) and makes no call for those; the API is called only for what the files lack
+  (top-ups: national if no national file, and ECI). Then the data file is re-exported as before. Tonight no press.
+- **Then:** `bls_load.py export` (the data file and `.sha256`), gate-commit api (code + file), the scratch import proof,
+  `probe16.py` before/after (16 ZIPs expected 0 moves; the new metros state -> metro; founder projects $0.00 data part,
+  real bids first), QT rows in `drives/qt-bls-d1386.py` (file verify count, file-loaded metros, areas left 0, the file's
+  checksum), the full QT alone, one smoke (the BLS card: 0 still to load; no Refresh press).
+
+## D-1394 — Night run 2026-12-03, item 3: the external-sources audit, report only (D-1391, D-1390)
+
+**Status:** Accepted (2026-11-27, the night run's builder B, from the founder's D-1391 order). Report only: nothing
+built, no call to any data API; public documentation pages read for the published limits.
+
+- **Scope read:** intelcost-app-fastapi (app, scripts), intelcost-app-react (src), intelcost-infra (drives, browser,
+  compose). Hosts, URLs and env key names by grep; calls per load from the code.
+- **Findings** in `morning-report-2026-12-03/d1394/SECTION.md`: six external data hosts (BLS OEWS/ECI, EIA, NOAA NCEI
+  ADS, Census geocoder, SAM.gov, MaxMind). Only BLS OEWS breaks hard rule 14 today (a 171-metro load about 240 of 500
+  daily calls; files under D-1392). Proposed next switch: NOAA normals for every station from NCEI's by-station archive.
+  No PPI, FRED or USACE call exists.
+- **Not changed:** any source, key, schedule or setting.
+
+## D-1395
+### D-1395 — The founder's answers during the 12-03 run (2026-11-27, 14:23 UTC)
+1. **Bench marketing restart (once):** the 12-03 close-out restarts ONLY the bench `marketing` container, after a quiet
+   check, so it serves Next.js 16.4.6; it confirms the served version and that home and pricing render. (A named
+   exception to hard rule 11 for this one service, this run.)
+2. **Audit pick (D-1394):** next run switches **NOAA normals to the bulk by-station archive**: downloaded by the MCP
+   browser, or placed by the founder in `test-data-local/weather/`; load all stations once; live NOAA calls only as a
+   fallback; verify the loaded stations match what the API gave (exactly, before any overwrite). **Kept on their APIs:**
+   BLS ECI, EIA, the Census geocoder, SAM.gov and MaxMind.
+
+## D-1396
+### D-1396 — NOAA normals from the placed bulk archive, this run (2026-11-27, logged 14:28 UTC)
+The founder placed `E:\Intelcost\test-data-local\weather\noaa\us-climate-normals_1991-2020_v1.0.1_monthly_multivariate_by-station_c20230404.tar.gz`
+(29.7 MB, all stations, monthly) and ordered: "Load from it, no API calls; verify the stations already fetched via the
+API match the file exactly; live calls only as fallback." Built in the 12-03 run as item 4 (D-1396), alongside item 1.
+
+## D-1396 (part b) — NOAA normals from the by-station archive: the builder's readings, logged before code (2026-11-27 ~14:35 UTC)
+- **Today's path:** `app/features/weather/service.py`. The weather route (`state(..., fetch=True)`) reads a station's 12
+  months from `wx.normals`; a station with none is fetched once from NCEI's Access Data Service (`fetch_ads`, seven
+  types: `MLY-PRCP-NORMAL` -> `prcp_in` numeric(6,2); `MLY-PRCP-AVGNDS-GE010HI/GE050HI/GE100HI` -> `ge010/ge050/ge100`
+  numeric(5,1) not null; `MLY-SNOW-AVGNDS-GE010TI` -> `snow_ge1`; `MLY-TMIN-AVGNDS-LSTH032` -> `frost_le32`;
+  `MLY-TMAX-AVGNDS-LSTH032` -> `tmax_le32`, all numeric(5,1)), the value only (flags ignored), a blank as null, and
+  stored with `wx.station.normals_source = 'ads'`. Pricing reads only what is stored. Bench today: 43 stations stored
+  (34 `seed`, 9 `ads`), 516 rows; `wx.station` 9,248 stations.
+- **The archive** (seen by the api at `/test-data-local/weather/noaa/`, read-only mount): 15,616 members, each a
+  top-level `<station>.csv` with 12 monthly rows and the same column names as ADS, plus `meas_flag_`/`comp_flag_`/
+  `years_` columns. Untrusted data: parsed only (tarfile streamed, nothing extracted; a member that is not a regular
+  file, has an absolute path or `..`, is not `<11 letters/digits>.csv` at the top, or is over 1 MB is not read; a
+  duplicate station refuses). Same mapping as ADS: the value text stripped, blank -> null, flags ignored; a value with
+  more decimals than its column refuses (never rounded silently). A dry read in a throwaway python container (no
+  network): all 9,248 `wx.station` stations are in the file with 12 months and the three rain counts; the 43 stored
+  stations equal the file in all 3,612 cells (7 x 516), nulls included.
+- **Command:** `python -m app.features.weather.normals_file archive <tar.gz> [--verify-only]` (in `app/`, as builder
+  rules forbid a new file under `scripts/`). **Verify first, always, read only:** every stored station equals the
+  file (12 rows, every column; Decimal equality), else exit 1 with the count and a few station ids, nothing written.
+  Then, in one transaction (verify again under a table lock), insert the 12 months of every `wx.station` station with
+  no stored months that the file holds complete; those stations get `normals_source = 'file'`; the stored 43 keep
+  their rows and their source (equal, so untouched). One row in a new `wx.normals_load` (archive name, sha256,
+  stations and rows loaded, stations and cells verified, time).
+- **Migration** (one revision on d1382a7c4e10): `ck_wx_station_source` widened to `'file'`; `wx.normals_load`.
+  Downgrade deletes the `file` stations' months, clears their source, drops the table, narrows the check.
+- **Fallback:** unchanged in shape (a station with no stored months is still fetched once), now named: `fetch_ads`
+  counts its calls (`ADS_CALLS`) and logs "NOAA ADS fallback call for station X" at warning. After the load every
+  `wx.station` station is stored, so no request goes out. Proof: a throwaway project placed and priced, the api log
+  shows no fallback line and no new `ads` station. No NOAA call is made tonight, the fallback is proved by a stub.
+- **Staging:** the same command from the same archive (copied to the staging host; no call). No export file
+  (111k rows, ~5 MB in git); the load row's sha256 shows the same file was used.
+
+### D-1391 (part b) — Close-out of the 12-03 night run (2026-11-27, from 16:08 UTC; push times in CLOSEOUT-LOG.md)
+All four items built, proved and pushed: D-1392 (OEWS from BLS's published May 2025 files: verify 6,741 rows 0
+differences, the 171 metros loaded, 580 areas 0 left; closes D-1385), D-1393 (marketing on Next.js 16.4.6, zod 4.6.7),
+D-1394 (the external-sources audit, report only), D-1396 (NOAA normals from the by-station archive: 43 stored stations 0
+differ, 9,248 of 9,248 stored; migration d1396c4e8a17, the one new revision, one head). No BLS, NOAA or other external
+data call. Gates on HEAD: app app-8b75e869c89f, api api-d6b96fe8d95b, market market-1e8e467c85be (the build reads Next.js
+16.4.6). The bench `marketing` service restarted once (D-1395 1): it ran `npm ci` and serves 16.4.6; the other 27
+containers kept their ids and start times; home and pricing rendered in the MCP. Founder $0.00 on every label. Fingerprint
+eacd2a92b3e281e2 at start and end. Open questions in morning-report-2026-12-03/NEXT-RUN.md.
