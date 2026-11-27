@@ -3,7 +3,8 @@
 // nothing when the call is not gated. Prints "?" when it cannot read the call; the shell half then falls back to
 // a plain pattern check. Data in, text out: it never blocks by itself. After that first line, one line per
 // `git commit` in the app, api or infra repo (D-1367, commitsOf below), and one per `git push` in the app, api,
-// infra or marketing repo (D-1373, D-1381), for the shell half's pass-stamp check.
+// infra or marketing repo (D-1373, D-1381), for the shell half's pass-stamp check, or in the legacy repo (D-1388:
+// always refused).
 //
 // Gated:
 //   - Edit, Write, MultiEdit, NotebookEdit on app or api source (APP and API below).
@@ -318,6 +319,7 @@ function writes(cmd, cwd) {
 // and one per `git push` in the app, api, infra or marketing repo (D-1381):
 //   PUSH\t<app|api|infra|market>\t<dir>      the shell half checks the pass stamp for the tree of the local umer-dev
 //   PUSHBAD\t<app|api|infra|market>\t<why>   any form other than `git push [-n|--dry-run|-v|-q|--porcelain] origin umer-dev`
+//   PUSHLEGACY\tlegacy\t<dir>                any push at all in the legacy repo intelcost/ (D-1388)
 const INFRA = /(^|\/)intelcost-infra(\/|$)/;
 function commitsOf(call) {
   const tool = String(call.tool_name || "");
@@ -358,6 +360,10 @@ function commitsOf(call) {
       if (sub === "push") {
         const kind = pushKind(dir);
         if (!kind) continue;
+        if (kind === "legacy") {
+          out.push(`PUSHLEGACY\tlegacy\t${dir}`);
+          continue;
+        }
         const why = pushOther(args.slice(i + 1));
         out.push(why ? `PUSHBAD\t${kind}\t${why}` : `PUSH\t${kind}\t${dir}`);
         continue;
@@ -380,9 +386,16 @@ const PUSH_REPOS = {
   "intelcost-infra": "infra",
   "intelcost-market-next": "market",
 };
+// D-1388 (the founder's D-1384 Q6): the legacy repo `intelcost/` is read-only (fetch and pull only), so every push in
+// it is refused. A folder named `intelcost` is legacy unless it is the workspace root itself (this hook's ../..), whose
+// folder has the same name in lower case. The innermost match wins: intelcost/intelcost-infra is infra.
+const WORKSPACE_ROOT = path.dirname(path.dirname(norm(__dirname)));
 function pushKind(dir) {
   const segs = String(dir).split("/");
-  for (let k = segs.length - 1; k >= 0; k--) if (PUSH_REPOS[segs[k]]) return PUSH_REPOS[segs[k]];
+  for (let k = segs.length - 1; k >= 0; k--) {
+    if (PUSH_REPOS[segs[k]]) return PUSH_REPOS[segs[k]];
+    if (segs[k] === "intelcost" && segs.slice(0, k + 1).join("/") !== WORKSPACE_ROOT) return "legacy";
+  }
   return "";
 }
 

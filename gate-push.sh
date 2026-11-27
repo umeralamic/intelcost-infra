@@ -17,7 +17,10 @@
 #      writes it, for a commit or --verify-head) is used as it is. Without one, it runs
 #      `gate-commit.sh <kind> --owner D-NNNN --verify-head`: every gate on HEAD, every exit code read; any non-zero
 #      stops here, nothing is pushed. The gates per repo are listed in gate-commit.sh (infra: shell, node and python
-#      syntax, the names scan, no private file, a QT pass when the range touches its inputs; market: lint, build).
+#      syntax, the names scan, no private file, a QT pass when the range touches its inputs; market: the names scan
+#      (D-1388), lint, build). Since D-1387 every names hit refuses, already-pushed ones too.
+#
+# The legacy repo (intelcost/) has no gate and no push: the hook refuses every push there (D-1388).
 #   3. Checks HEAD and the stamp again, then `git push [--dry-run] origin umer-dev`. Never a force, never another
 #      branch: a remote that moved on (non fast-forward) is refused by git itself; merge it in and run this again.
 #

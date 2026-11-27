@@ -36,6 +36,9 @@
 # is in it) and the marketing site (intelcost-market-next), with stamps infra-<tree> and market-<tree> written by
 # `intelcost-infra/gate-push.sh infra|market --owner D-NNNN` (gate-commit.sh --verify-head lists their gates).
 #
+# D-1388 (the founder's D-1384 Q6): every git push in the legacy repo (intelcost/, read-only: fetch and pull only)
+# is refused, in any form, --dry-run included.
+#
 # Reads the tool call as JSON on stdin and blocks (exit 2, reason on stderr), as the rule 7 and D-592 hooks do.
 # Each refusal is appended to .private/founder-gate.log.
 
@@ -88,6 +91,10 @@ if [ "$what" = '?' ]; then
     refuse "a git push (the call could not be read)" \
       "Blocked by D-1373/D-1381: a git push in the app, api, infra or marketing repo, and this hook could not read the call to check its gate pass. Push with intelcost-infra/gate-push.sh app|api|infra|market --owner <your D-number>."
   fi
+  if printf '%s' "$input" | grep -Eiq 'intelcost[\\/]+intelcost([\\/"[:space:]]|$)' && printf '%s' "$input" | grep -Eiq '\bgit\b[^"]*\bpush\b'; then
+    refuse "a git push in the legacy repo (the call could not be read)" \
+      "Blocked by D-1388: a git push naming the legacy repo (intelcost/), and this hook could not read the call. Legacy is read-only: fetch and pull only."
+  fi
 fi
 
 # ---- D-1367: a commit needs its pass stamp ----------------------------------------------------------------
@@ -103,6 +110,11 @@ if [ -n "$commits" ]; then
     if [ "$tag" = COMMITBAD ]; then
       refuse "git commit in $kind with $arg" \
         "Blocked by D-1367: a git commit in the $kind repo with $arg commits a tree other than the staged one, which no gate read. Stage by name, then commit the staged tree (app, api: intelcost-infra/gate-commit.sh)."
+    fi
+    if [ "$tag" = PUSHLEGACY ]; then
+      refuse "git push in the legacy repo" \
+        "Blocked by D-1388: a git push in the legacy repo (intelcost/). Legacy is read-only: fetch and pull only, never
+a push, in any form (--dry-run included). The live legacy branch is read from origin/UmeralamDEV."
     fi
     if [ "$tag" = PUSHBAD ]; then
       refuse "git push in $kind with $arg" \

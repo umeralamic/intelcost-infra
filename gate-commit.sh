@@ -30,14 +30,16 @@
 #   ./gate-commit.sh market --owner D-1381 --verify-head
 # infra: bash -n of every tracked *.sh; node --check of every tracked *.js, *.mjs, *.cjs; a Python syntax check
 # (ast.parse, nothing written) of every tracked *.py in a throwaway python:3.14-slim container (--pull never,
-# --network none, the repo mounted read-only; python is not on the host); the names scan (every tracked path and
-# text file, substring, any case, against the client and book lists; office files unpacked: a hit refuses when the
-# push adds or changes that file, a hit in one already on origin/umer-dev unchanged is a WARN; counts only, the file
-# list in E:\Intelcost\.private\gate-scan-infra.txt); no private file tracked (.private/, .locks/, the guard list,
-# the denylists, the stamps, a .env other than *.example); and, when the pushed range (origin/umer-dev..HEAD) touches
-# a quantity-table input, a QT pass for HEAD's files (qt-<qt-key.sh --index>, at most 24 h old).
-# market: npm run lint, npm run build (never prettier). The bench's marketing service runs `next dev` with .next in a
-# container volume, so a host build reloads nothing it serves.
+# --network none, the repo mounted read-only; python is not on the host); the names scan (names_scan below: every
+# tracked path, text file and office file, substring, any case, against the client and book lists; since D-1387 every
+# hit refuses, already-pushed ones too, and so does any office file tracked under workspace/docs/reference/; counts
+# only, the file list in E:\Intelcost\.private\gate-scan-infra.txt); no private file tracked (.private/, .locks/, the
+# guard list, the denylists, the stamps, a .env other than *.example); and, when the pushed range
+# (origin/umer-dev..HEAD) touches a quantity-table input, a QT pass for HEAD's files (qt-<qt-key.sh --index>, at most
+# 24 h old).
+# market: the same names scan (D-1388, the founder's D-1384 Q5; list in .private/gate-scan-market.txt), npm run lint,
+# npm run build (never prettier). The bench's marketing service runs `next dev` with .next in a container volume, so
+# a host build reloads nothing it serves.
 
 set -u
 set -o pipefail
@@ -163,42 +165,67 @@ for p in names:
 print("  %d python files, %d with a syntax error" % (len(names), bad))
 sys.exit(1 if bad or not names else 0)'
 }
-infra_names() { # the client and book names: counts only on screen, the file list in .private (never a term)
-  local pats scan base n_path n_text office_new=0 office_old=0 f c list
+names_scan() { # <infra|market>: the client and book names in HEAD. Counts only on screen, the file list in .private
+  # (never a term). D-1381; D-1387: every hit refuses, already-pushed ones too (no WARN path); D-1388: marketing too.
+  #   - every tracked path and every tracked text file of HEAD, substring, any case, against both lists;
+  #   - office files (xlsx, xlsm, xlsb, docx, pptx, ods, odt, odp unpacked; xls, doc, ppt read raw), the same;
+  #   - the book list reads a package-lock.json with its "integrity": "sha...-<base64>" values blanked (D-1388: a
+  #     random hash can hold any three letters); the client list reads it raw, like every other file.
+  #   - infra (D-1387): no office file tracked under workspace/docs/reference/ at all.
+  local kind="$1" scan n_path n_text n_office n_ref f c list lock
   local priv="${INTELCOST_PRIVATE:-$root/.private}"
-  scan="$priv/gate-scan-infra.txt"
-  pats=$(mktemp)
-  for list in "$priv/client-denylist.txt" "$priv/book-denylist.txt"; do
-    [ -s "$list" ] || { rm -f "$pats"; echo "  missing or empty name list: ${list##*/}"; return 1; }
-    tr -d '\r' <"$list" | grep -v '^[[:space:]]*#' | sed 's/[[:space:]]*$//' | grep -v '^$' >>"$pats"
+  local OFFICE='\.(xlsx|xlsm|xlsb|xls|ods|docx|doc|odt|pptx|ppt|odp)$'
+  scan="$priv/gate-scan-$kind.txt"
+  local pc pb
+  pc=$(mktemp)
+  pb=$(mktemp)
+  for list in client book; do
+    f="$priv/$list-denylist.txt"
+    [ -s "$f" ] || { rm -f "$pc" "$pb"; echo "  missing or empty name list: ${f##*/}"; return 1; }
+    tr -d '\r' <"$f" | grep -v '^[[:space:]]*#' | sed 's/[[:space:]]*$//' | grep -v '^$' >"$([ "$list" = client ] && echo "$pc" || echo "$pb")"
   done
+  [ -s "$pc" ] && [ -s "$pb" ] || { rm -f "$pc" "$pb"; echo "  a name list has no terms"; return 1; }
   # The names live only in those private files (no name is written here; the client list holds every one ordered).
-  base=$(git rev-parse --verify -q refs/remotes/origin/umer-dev)
   {
-    echo "# D-1381 names scan of infra HEAD $(git rev-parse --short HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ): files only"
-    git -c core.quotePath=false ls-files | grep -i -F -f "$pats" | sed 's/^/path: /'
-    git -c core.quotePath=false grep -l -I -i -F -f "$pats" HEAD -- . | sed 's/^HEAD:/text: /'
+    echo "# D-1381/D-1387/D-1388 names scan of $kind HEAD $(git rev-parse --short HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ): files only"
+    git -c core.quotePath=false ls-files | grep -i -F -f "$pc" | sed 's/^/path (client list): /'
+    git -c core.quotePath=false ls-files | grep -i -F -f "$pb" | sed 's/^/path (book list): /'
+    git -c core.quotePath=false grep -l -I -i -F -f "$pc" HEAD -- . | sed 's/^HEAD:/text (client list): /'
+    git -c core.quotePath=false grep -l -I -i -F -f "$pb" HEAD -- . ':(exclude,glob)**/package-lock.json' |
+      sed 's/^HEAD:/text (book list): /'
+    while IFS= read -r lock; do
+      [ -n "$lock" ] || continue
+      git show "HEAD:$lock" | sed -E 's/"integrity": *"sha[0-9]+-[A-Za-z0-9+/=]+"/"integrity": ""/' |
+        grep -q -i -F -f "$pb" && echo "text (book list, integrity hashes blanked): $lock"
+    done < <(git -c core.quotePath=false ls-files -- 'package-lock.json' '**/package-lock.json')
   } >"$scan"
-  n_path=$(grep -c '^path: ' "$scan")
-  n_text=$(grep -c '^text: ' "$scan")
+  n_path=$(grep -c '^path ' "$scan")
+  n_text=$(grep -c '^text ' "$scan")
+  n_office=0
   while IFS= read -r f; do
     [ -f "$f" ] || continue
-    c=$(unzip -p "$f" 2>/dev/null | grep -a -o -i -F -f "$pats" | grep -c .)
-    [ "$c" -gt 0 ] || continue
-    if [ -n "$base" ] && git cat-file -e "$base:$f" 2>/dev/null && git diff --quiet "$base" HEAD -- "$f"; then
-      office_old=$((office_old + 1))
-      echo "office, on origin unchanged ($c hits): $f" >>"$scan"
+    if unzip -l "$f" >/dev/null 2>&1; then
+      c=$(unzip -p "$f" 2>/dev/null | grep -a -o -i -F -f "$pc" -f "$pb" | grep -c .)
     else
-      office_new=$((office_new + 1))
-      echo "office, added or changed by this push ($c hits): $f" >>"$scan"
+      c=$(grep -a -o -i -F -f "$pc" -f "$pb" "$f" | grep -c .)
     fi
-  done < <(git -c core.quotePath=false ls-files -- '*.xlsx' '*.xlsm' '*.docx' '*.pptx')
-  rm -f "$pats"
-  echo "  names: $n_path paths, $n_text text files, $office_new office files added or changed by this push; list: .private/${scan##*/}"
-  [ "$office_old" -eq 0 ] ||
-    echo "  WARN: $office_old office file(s) already on origin/umer-dev, unchanged, carry a listed name (not refused; a question for the founder)"
-  [ "$n_path" -eq 0 ] && [ "$n_text" -eq 0 ] && [ "$office_new" -eq 0 ]
+    [ "$c" -gt 0 ] || continue
+    n_office=$((n_office + 1))
+    echo "office ($c hits): $f" >>"$scan"
+  done < <(git -c core.quotePath=false ls-files | grep -i -E "$OFFICE")
+  n_ref=0
+  local ref_note=''
+  if [ "$kind" = infra ]; then
+    git -c core.quotePath=false ls-files -- workspace/docs/reference | grep -i -E "$OFFICE" |
+      sed 's/^/office file tracked under docs\/reference (D-1387: never tracked): /' >>"$scan"
+    n_ref=$(grep -c '^office file tracked under docs/reference' "$scan")
+    ref_note="; $n_ref office files tracked under workspace/docs/reference"
+  fi
+  rm -f "$pc" "$pb"
+  echo "  names: $n_path paths, $n_text text files, $n_office office files with a listed name$ref_note; list: .private/${scan##*/}"
+  [ "$n_path" -eq 0 ] && [ "$n_text" -eq 0 ] && [ "$n_office" -eq 0 ] && [ "$n_ref" -eq 0 ]
 }
+infra_names() { names_scan infra; }
 infra_private() { # nothing private tracked
   local hits
   hits=$(git -c core.quotePath=false ls-files |
@@ -244,6 +271,7 @@ if [ "$repo_kind" = infra ]; then
   gate private_files infra_private
   gate qt_pass infra_qt
 elif [ "$repo_kind" = market ]; then
+  gate names names_scan market
   gate lint npm run lint
   gate build npm run build
 elif [ "$repo_kind" = app ]; then

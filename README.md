@@ -331,12 +331,18 @@ every tracked `*.sh`; `node --check` of every tracked `*.js`, `*.mjs`, `*.cjs` (
 of every tracked `*.py` in a throwaway `python:3.14-slim` container (`--pull never`, `--network none`, read-only
 mount; python is not on the host); the names scan (paths and text files, substring, any case, against
 `.private/client-denylist.txt` and `.private/book-denylist.txt`; office files unpacked; counts only, the file list in
-`.private/gate-scan-infra.txt`; a hit in an office file already on `origin/umer-dev` unchanged is a WARN, any other
-hit refuses); no `.private/`, `.locks/`, private list, stamp or `.env` (other than `*.example`) tracked; and, when the
-range `origin/umer-dev..HEAD` touches a QT input, a QT pass for HEAD's files (`qt-<./qt-key.sh --index>`). It does not
-start a QT: run `QT_OWNER=D-NNNN ./quantity-table.sh` and push again. The marketing gate: `npm run lint`,
-`npm run build`, never prettier. The bench's `marketing` service runs `next dev` with `.next` and `node_modules` in
-container volumes, so a host build reloads nothing it serves.
+`.private/gate-scan-infra.txt`; since D-1387 every hit refuses, already-pushed ones too, and so does any office file
+tracked under `workspace/docs/reference/`); no `.private/`, `.locks/`, private list, stamp or `.env` (other than
+`*.example`) tracked; and, when the range `origin/umer-dev..HEAD` touches a QT input, a QT pass for HEAD's files
+(`qt-<./qt-key.sh --index>`). It does not start a QT: run `QT_OWNER=D-NNNN ./quantity-table.sh` and push again. The
+marketing gate (D-1388): the same names scan (list in `.private/gate-scan-market.txt`), then `npm run lint`,
+`npm run build`, never prettier. The book-list scan reads a `package-lock.json` with its `"integrity"` hash values
+blanked (a random base64 hash can hold any three letters); the client-list scan reads it raw. The bench's
+`marketing` service runs `next dev` with `.next` and `node_modules` in container volumes, so a host build reloads
+nothing it serves.
+
+**The legacy repo is never pushed (D-1388).** The hook refuses every `git push` in `intelcost/` (any form,
+`--dry-run` included); legacy is fetch and pull only.
 
 **Enforcement files count as QT inputs (D-1373).** `lock.sh`, `gate-commit.sh`, `gate-push.sh`, `qt-key.sh` and the
 hook mirror `workspace/.claude/hooks/` are in the QT key. `./qt-key.sh --worktree` reads the LIVE hooks in
