@@ -28,6 +28,16 @@ workspace/docs/reference/Bid tabs*
 workspace/docs/reference/**/*[Bb]id tab*
 workspace/docs/reference/**/*[Bb]id-tab*
 workspace/docs/reference/**/*[Cc]lient input*
+# Spreadsheets and office files under docs/reference (D-1387, the founder's D-1384 Q4, standing): on disk only, never
+# in git or the mirror (CSV is text and stays: the names scan reads it). `./workspace-mirror.sh` skips every root file
+# whose mirror path this file ignores and prints the skips as expected "Only in" lines. Any case (the [Xx] classes).
+workspace/docs/reference/**/*.[Xx][Ll][Ss]
+workspace/docs/reference/**/*.[Xx][Ll][Ss][XxMmBb]
+workspace/docs/reference/**/*.[Oo][Dd][SsTtPp]
+workspace/docs/reference/**/*.[Dd][Oo][Cc]
+workspace/docs/reference/**/*.[Dd][Oo][Cc][Xx]
+workspace/docs/reference/**/*.[Pp][Pp][Tt]
+workspace/docs/reference/**/*.[Pp][Pp][Tt][Xx]
 
 # Morning reports, their zips and logs stay on disk, out of git (2026-11-13). Ignoring does not untrack what is already
 # tracked (morning-report-2026-10-30 to -11-09): that stays as it is until the founder decides.

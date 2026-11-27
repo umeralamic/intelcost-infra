@@ -29,6 +29,13 @@ the copy that survives a lost laptop. CLAUDE.md carries the rule that keeps the 
 equal: a session that changes a workspace file refreshes this mirror and commits it
 before it ends.
 
+`./workspace-mirror.sh --check` compares the mirror with the root; `--apply` copies every new or changed root file
+into it (it never deletes; stage and commit by name afterwards). It skips every root file whose mirror path
+`.gitignore` ignores: the bid tabs and client inputs (D-1372) and, since D-1387, every spreadsheet and office file
+under `docs/reference/` (xlsx, xls, xlsm, xlsb, ods, docx, doc, pptx, ppt, odt, odp; CSV stays, it is text the push
+gate's names scan reads). The skips print as expected "Only in the root" counts per `.gitignore` line, never by file
+name. Anything else it prints is a real difference.
+
 ## Boot
 
 ```bash
