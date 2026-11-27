@@ -38635,3 +38635,18 @@ data call. Gates on HEAD: app app-8b75e869c89f, api api-d6b96fe8d95b, market mar
 16.4.6). The bench `marketing` service restarted once (D-1395 1): it ran `npm ci` and serves 16.4.6; the other 27
 containers kept their ids and start times; home and pricing rendered in the MCP. Founder $0.00 on every label. Fingerprint
 eacd2a92b3e281e2 at start and end. Open questions in morning-report-2026-12-03/NEXT-RUN.md.
+
+## D-1397
+### D-1397 — The founder's answers to REPORT_2026-12-03 (2026-11-27, logged 17:14 UTC; built next run)
+1. **BLS card text:** yes. The card says Refresh loads from the placed files first, and the API only for top-ups.
+2. **QT and the BLS files:** the full BLS file verify runs only on a load or a Refresh. The QT instead checks the loaded
+   data's checksum against the export file (the 3-minute parse leaves the QT).
+3. **National rows:** the founder is placing `oesm25nat.zip` in `test-data-local/wage/bls/`. Verify the 34 national rows
+   against it (verify first; any difference stops and is reported).
+4. **Measures:** keep median and p75 only (D-1386 stands).
+5. **The BLS data file:** gzip it, with its checksum (the import reads the .gz and checks the sha256).
+6. **"Asked, empty" state:** yes, but only if an area ever returns nothing. Build nothing until then.
+7. **Mirror:** CSV under docs/reference leaves the mirror too (the D-1387 exclusion list grows by *.csv there).
+8. **History:** no rewrite now. Revisit before anyone outside the team gets repo access.
+9. **Lockfile-hash narrowing** of the book scan (D-1388): fine.
+10. **Gate stamps:** a gate change voids older pass stamps of its kind.
