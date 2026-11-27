@@ -9,6 +9,11 @@
 #   ./qt-key.sh --index      the files as staged: what a commit would record (the hooks as the staged mirror copies)
 #   ./qt-key.sh --touches    exit 0 when the staged changes touch one of these files (else 1)
 #   ./qt-key.sh --names-touch   exit 0 when a path on stdin is one of these files (D-1381, the infra push gate)
+#   ./qt-key.sh --gates      the gates hash (D-1400, the founder's D-1397 10: a gate change voids older pass stamps of
+#                            its kind): one hash over gate-commit.sh, gate-push.sh and qt-key.sh as they are on disk
+#                            here. gate-commit.sh writes it into every app, api, infra and market stamp as
+#                            "gates <hash>"; the hook and gate-push.sh count a stamp only when it equals this. A QT
+#                            stamp is keyed by name to the QT inputs, which hold these three files already.
 #
 # A QT that exits 0 with 0 FAIL lines writes E:\Intelcost\.private\gate-pass\qt-<key> (its --worktree key, the same
 # at its start and its end); the founder gate hook lets an infra commit that touches one of these files through only
@@ -18,6 +23,7 @@
 set -u
 cd "$(dirname "$0")" || exit 2
 INPUTS=(quantity-table.sh browser/quantity-table.mjs browser/lib drives lock.sh gate-commit.sh gate-push.sh qt-key.sh)
+GATES=(gate-commit.sh gate-push.sh qt-key.sh)
 HOOKS_MIRROR=workspace/.claude/hooks
 HOOKS_LIVE="${INTELCOST_HOOKS_LIVE:-../.claude/hooks}"
 RE='^(quantity-table\.sh|browser/quantity-table\.mjs|browser/lib/|drives/|lock\.sh|gate-commit\.sh|gate-push\.sh|qt-key\.sh|workspace/\.claude/hooks/)'
@@ -44,5 +50,11 @@ case "${1:-}" in
     # D-1381: exit 0 when one of the repo paths on stdin (one a line) is one of these files (the infra push gate
     # reads the pushed range's names this way).
     grep -Eq "$RE" ;;
-  *) echo "usage: qt-key.sh --worktree | --index | --touches | --names-touch"; exit 2 ;;
+  --gates)
+    # D-1400: each gate script's blob id beside its name, hashed once. Any missing file fails (no hash: every stamp
+    # counts as void).
+    for p in "${GATES[@]}"; do [ -f "$p" ] || { echo "qt-key: no $p" >&2; exit 2; }; done
+    paste -d' ' <(printf '%s\n' "${GATES[@]}" | git hash-object --stdin-paths) <(printf '%s\n' "${GATES[@]}") |
+      git hash-object --stdin ;;
+  *) echo "usage: qt-key.sh --worktree | --index | --touches | --names-touch | --gates"; exit 2 ;;
 esac

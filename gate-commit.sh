@@ -20,6 +20,12 @@
 # and commits. The founder gate hook refuses a plain `git commit` in the app or api repo unless such a stamp exists
 # for exactly the staged tree, so a commit after a failing gate, or after staging something new, is refused.
 #
+# D-1400 (the founder's D-1397 10: a gate change voids older pass stamps of its kind): every stamp this writes has a
+# second line "gates <hash>", the hash of the gate scripts that produced it (`qt-key.sh --gates`: gate-commit.sh,
+# gate-push.sh and qt-key.sh as on disk). The hook and gate-push.sh count a stamp only when that line equals the
+# current hash, so a stamp made before a change to any of them no longer counts. A gate script that changes while the
+# gates run leaves no stamp.
+#
 # --verify-head (D-1373) also refuses when anything is staged or a merge, rebase, cherry-pick, revert or am is in
 # progress, so the working tree the gates read is exactly HEAD's tree; the stamp is then HEAD's tree, which the hook
 # needs before a `git push` of umer-dev.
@@ -32,7 +38,7 @@
 # (ast.parse, nothing written) of every tracked *.py in a throwaway python:3.14-slim container (--pull never,
 # --network none, the repo mounted read-only; python is not on the host); the names scan (names_scan below: every
 # tracked path, text file and office file, substring, any case, against the client and book lists; since D-1387 every
-# hit refuses, already-pushed ones too, and so does any office file tracked under workspace/docs/reference/; counts
+# hit refuses, already-pushed ones too, and so does any office file or (D-1400) CSV tracked under workspace/docs/reference/; counts
 # only, the file list in E:\Intelcost\.private\gate-scan-infra.txt); no private file tracked (.private/, .locks/, the
 # guard list, the denylists, the stamps, a .env other than *.example); and, when the pushed range
 # (origin/umer-dev..HEAD) touches a quantity-table input, a QT pass for HEAD's files (qt-<qt-key.sh --index>, at most
@@ -79,6 +85,7 @@ case "$repo_kind" in
   infra|market) [ -n "$verify_head" ] || die "$repo_kind takes --verify-head only (its commits are plain git commits; its gate runs at the push, gate-push.sh)" ;;
 esac
 
+gates_hash="$(bash "$here/qt-key.sh" --gates)" && [ -n "$gates_hash" ] || die "qt-key.sh --gates gave no hash of the gate scripts"
 cd "$repo" || die "no repo at $repo"
 branch="$(git branch --show-current)"
 [ "$branch" = "umer-dev" ] || die "$repo_kind is on '$branch', not umer-dev"
@@ -171,7 +178,7 @@ names_scan() { # <infra|market>: the client and book names in HEAD. Counts only 
   #   - office files (xlsx, xlsm, xlsb, docx, pptx, ods, odt, odp unpacked; xls, doc, ppt read raw), the same;
   #   - the book list reads a package-lock.json with its "integrity": "sha...-<base64>" values blanked (D-1388: a
   #     random hash can hold any three letters); the client list reads it raw, like every other file.
-  #   - infra (D-1387): no office file tracked under workspace/docs/reference/ at all.
+  #   - infra (D-1387, D-1400): no office file and no CSV tracked under workspace/docs/reference/ at all.
   local kind="$1" scan n_path n_text n_office n_ref f c list lock
   local priv="${INTELCOST_PRIVATE:-$root/.private}"
   local OFFICE='\.(xlsx|xlsm|xlsb|xls|ods|docx|doc|odt|pptx|ppt|odp)$'
@@ -216,10 +223,11 @@ names_scan() { # <infra|market>: the client and book names in HEAD. Counts only 
   n_ref=0
   local ref_note=''
   if [ "$kind" = infra ]; then
-    git -c core.quotePath=false ls-files -- workspace/docs/reference | grep -i -E "$OFFICE" |
-      sed 's/^/office file tracked under docs\/reference (D-1387: never tracked): /' >>"$scan"
-    n_ref=$(grep -c '^office file tracked under docs/reference' "$scan")
-    ref_note="; $n_ref office files tracked under workspace/docs/reference"
+    # D-1400 (the founder's D-1397 7): CSV there too.
+    git -c core.quotePath=false ls-files -- workspace/docs/reference | grep -i -E "$OFFICE|\\.csv\$" |
+      sed 's/^/office or CSV file tracked under docs\/reference (D-1387, D-1400: never tracked): /' >>"$scan"
+    n_ref=$(grep -c '^office or CSV file tracked under docs/reference' "$scan")
+    ref_note="; $n_ref office or CSV files tracked under workspace/docs/reference"
   fi
   rm -f "$pc" "$pb"
   echo "  names: $n_path paths, $n_text text files, $n_office office files with a listed name$ref_note; list: .private/${scan##*/}"
@@ -321,11 +329,12 @@ fi
 # Every gate 0. The tree must still be the one the gates read.
 [ "$(git write-tree)" = "$tree" ] || die "the index changed during the gates"
 [ -z "$(git diff --name-only)$(git ls-files --others --exclude-standard)" ] || die "the working tree changed during the gates"
+[ "$(bash "$here/qt-key.sh" --gates)" = "$gates_hash" ] || die "a gate script (gate-commit.sh, gate-push.sh, qt-key.sh) changed during the gates: no pass stamp"
 mkdir -p "$PASS_DIR"
 find "$PASS_DIR" -maxdepth 1 -type f -mtime +2 -delete 2>/dev/null
-printf 'gate pass %s tree %s head %s, %s to %s, owner %s:%s\n' "$repo_kind" "$tree" "$(git rev-parse HEAD)" "$start" \
-  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$owner" "$summary" >"$PASS_DIR/$repo_kind-$tree"
-echo "gate-commit: every gate exited 0 (${summary# }); pass stamp $repo_kind-${tree:0:12}"
+printf 'gate pass %s tree %s head %s, %s to %s, owner %s:%s\ngates %s\n' "$repo_kind" "$tree" "$(git rev-parse HEAD)" "$start" \
+  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$owner" "$summary" "$gates_hash" >"$PASS_DIR/$repo_kind-$tree"
+echo "gate-commit: every gate exited 0 (${summary# }); pass stamp $repo_kind-${tree:0:12}, gates ${gates_hash:0:12}"
 if [ -n "$verify_head" ]; then
   echo "gate-commit: --verify-head, no commit (HEAD $(git rev-parse --short HEAD), tree ${tree:0:12}: a git push of it now passes the hook)"
   exit 0

@@ -32,8 +32,8 @@ before it ends.
 `./workspace-mirror.sh --check` compares the mirror with the root; `--apply` copies every new or changed root file
 into it (it never deletes; stage and commit by name afterwards). It skips every root file whose mirror path
 `.gitignore` ignores: the bid tabs and client inputs (D-1372) and, since D-1387, every spreadsheet and office file
-under `docs/reference/` (xlsx, xls, xlsm, xlsb, ods, docx, doc, pptx, ppt, odt, odp; CSV stays, it is text the push
-gate's names scan reads). The skips print as expected "Only in the root" counts per `.gitignore` line, never by file
+under `docs/reference/` (xlsx, xls, xlsm, xlsb, ods, docx, doc, pptx, ppt, odt, odp) and, since D-1400, every CSV
+there. The skips print as expected "Only in the root" counts per `.gitignore` line, never by file
 name. Anything else it prints is a real difference.
 
 ## Boot
@@ -297,6 +297,12 @@ that are not ignored, an empty index (but for `--dry-run`) and a running QT; hol
 `mypy app`, `alembic heads` (exactly one) in the api container after its own `founder-active.sh` quiet (poetry on the
 host when present), each exit code read; the first non-zero stops it. All 0: the pass stamp
 `.private\gate-pass\<app|api>-<git write-tree>`, then the commit.
+
+**Stamps carry the gates hash (D-1400).** Every app, api, infra and market stamp has a second line
+`gates <hash>`, the hash of `gate-commit.sh`, `gate-push.sh` and `qt-key.sh` on disk (`./qt-key.sh --gates`). The hook
+and `gate-push.sh` count a stamp only when that line equals the current hash: a change to any of the three voids the
+older stamps, and the next commit or push runs the gates again. A QT stamp is keyed by name to the QT inputs, which
+hold the three scripts already.
 
 The hook refuses a plain `git commit` in the app or api repo unless such a stamp (at most 24 h old) exists for exactly
 the staged tree, and refuses `-a`, `-i`, `-o` and a pathspec there. An infra commit that stages a QT input needs the QT

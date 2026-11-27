@@ -36,6 +36,10 @@
 # is in it) and the marketing site (intelcost-market-next), with stamps infra-<tree> and market-<tree> written by
 # `intelcost-infra/gate-push.sh infra|market --owner D-NNNN` (gate-commit.sh --verify-head lists their gates).
 #
+# D-1400 (the founder's D-1397 10): an app, api, infra or market stamp counts only when its "gates <hash>" line
+# equals intelcost-infra/qt-key.sh --gates now (the hash of gate-commit.sh, gate-push.sh, qt-key.sh): a gate change
+# voids older stamps of its kind.
+#
 # D-1388 (the founder's D-1384 Q6): every git push in the legacy repo (intelcost/, read-only: fetch and pull only)
 # is refused, in any form, --dry-run included.
 #
@@ -104,6 +108,16 @@ fresh() { # <file>: exists and at most 24 h old
   t=$(date -r "$1" +%s 2>/dev/null) || return 1
   [ $(($(date -u +%s) - t)) -le 86400 ]
 }
+# D-1400 (the founder's D-1397 10): an app, api, infra or market stamp counts only when its "gates <hash>" line equals
+# the gate scripts as they are now (intelcost-infra/qt-key.sh --gates: gate-commit.sh, gate-push.sh, qt-key.sh). A
+# stamp from before a gate change, or without the line, is void. No hash (the script missing or failing): every
+# stamp is void (fail closed). QT stamps are keyed by name to the QT inputs, which hold those scripts already.
+gates_now=''
+valid() { # <file>: fresh and made by the current gate scripts
+  fresh "$1" || return 1
+  [ -n "$gates_now" ] || gates_now=$(bash "$root/intelcost-infra/qt-key.sh" --gates 2>/dev/null) || gates_now=''
+  [ -n "$gates_now" ] && grep -qx "gates $gates_now" "$1"
+}
 if [ -n "$commits" ]; then
   while IFS=$'\t' read -r tag kind arg; do
     [ -n "$tag" ] || continue
@@ -125,11 +139,14 @@ and it needs a gate pass on the tree it sends. From intelcost-infra/ run:
     fi
     if [ "$tag" = PUSH ]; then
       tree=$(git -C "$arg" rev-parse --verify -q 'umer-dev^{tree}' 2>/dev/null)
-      if [ -z "$tree" ] || ! fresh "$pass/$kind-$tree"; then
-        refuse "git push in $kind, no gate pass for umer-dev's tree ${tree:-?}" \
-          "Blocked by D-1373/D-1381: a git push in the $kind repo needs every gate to have exited 0 on exactly the tree it sends
-(umer-dev's tree ${tree:0:12}), and there is no pass for it in the last 24 h: a merge, cherry-pick, revert or rebase
-made a commit no gate read, or the gates have not run on it. From intelcost-infra/ run:
+      if [ -z "$tree" ] || ! valid "$pass/$kind-$tree"; then
+        void=''
+        [ -n "$tree" ] && fresh "$pass/$kind-$tree" && void=' (a stamp exists but is void: made by other gate scripts than the current ones, D-1400)'
+        refuse "git push in $kind, no gate pass for umer-dev's tree ${tree:-?}${void}" \
+          "Blocked by D-1373/D-1381/D-1400: a git push in the $kind repo needs every gate to have exited 0 on exactly the tree it sends
+(umer-dev's tree ${tree:0:12}), and there is no pass for it in the last 24 h by the current gate scripts${void}: a merge,
+cherry-pick, revert or rebase made a commit no gate read, the gates have not run on it, or a gate script changed
+since. From intelcost-infra/ run:
   ./gate-push.sh $kind --owner <your D-number> [--dry-run]
 It runs the full gates on a clean HEAD with every exit code read and pushes origin umer-dev only when all are 0."
       fi
@@ -149,9 +166,11 @@ It runs the full gates on a clean HEAD with every exit code read and pushes orig
       continue
     fi
     tree=$(git -C "$arg" write-tree 2>/dev/null)
-    if [ -z "$tree" ] || ! fresh "$pass/$kind-$tree"; then
-      refuse "git commit in $kind, no gate pass for tree ${tree:-?}" \
-        "Blocked by D-1367: a git commit in the $kind repo needs every gate to have exited 0 on exactly the staged tree (${tree:0:12}), and there is no pass for it: a gate failed, the gates were not run through the helper, or something was staged after them. From intelcost-infra/ run:
+    if [ -z "$tree" ] || ! valid "$pass/$kind-$tree"; then
+      void=''
+      [ -n "$tree" ] && fresh "$pass/$kind-$tree" && void=' (a stamp exists but is void: made by other gate scripts than the current ones, D-1400)'
+      refuse "git commit in $kind, no gate pass for tree ${tree:-?}${void}" \
+        "Blocked by D-1367/D-1400: a git commit in the $kind repo needs every gate to have exited 0 on exactly the staged tree (${tree:0:12}), and there is no pass for it by the current gate scripts${void}: a gate failed, the gates were not run through the helper, something was staged after them, or a gate script changed since. From intelcost-infra/ run:
   ./gate-commit.sh $kind --owner <your D-number> -m \"<message>\"
 It runs the full gates with every exit code read and commits only when all are 0."
     fi

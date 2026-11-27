@@ -6,7 +6,8 @@
 #   ./workspace-mirror.sh --apply    copy every new or changed root file that is not skipped, then --check
 #
 # Skipped: every root file whose mirror path this repo's .gitignore ignores (`git check-ignore`): the bid tabs and
-# client inputs (D-1372), and the spreadsheets and office files under docs/reference (D-1387). They are printed as
+# client inputs (D-1372), the spreadsheets and office files under docs/reference (D-1387), and the CSV files there
+# (D-1400, the founder's D-1397 7). They are printed as
 # expected "Only in" counts per .gitignore line, never by name (a file name can carry a name from the private lists).
 # --apply never deletes: a file only in the mirror, or an ignored file sitting in the mirror on disk, is reported for
 # a person to remove. Staging and committing the mirror stays a separate, deliberate step (stage by name).

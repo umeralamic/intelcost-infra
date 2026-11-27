@@ -352,8 +352,9 @@ if [ "$STATUS" -eq 0 ]; then
   if [ "$QT_KEY1" = "$QT_KEY0" ]; then
     PASS_DIR="$(cd .. && pwd)/.private/gate-pass"
     mkdir -p "$PASS_DIR"
-    printf 'QT pass %s to %s, owner %s, pid %s, QT_SKIP_PREPARE=%s, 0 FAIL\n' "$QT_START" \
-      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$QT_OWNER" $$ "${QT_SKIP_PREPARE:-0}" >"$PASS_DIR/qt-$QT_KEY1"
+    # D-1400: the key already holds the gate scripts; the gates line is for the record.
+    printf 'QT pass %s to %s, owner %s, pid %s, QT_SKIP_PREPARE=%s, 0 FAIL\ngates %s\n' "$QT_START" \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$QT_OWNER" $$ "${QT_SKIP_PREPARE:-0}" "$(bash ./qt-key.sh --gates)" >"$PASS_DIR/qt-$QT_KEY1"
     # Worded without the word the FAIL count reads.
     echo "QT pass stamp: qt-${QT_KEY1:0:12} (exit 0, no failure lines)"
   else

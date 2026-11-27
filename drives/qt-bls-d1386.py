@@ -13,9 +13,9 @@ Worked by hand (DECISIONS D-1385, D-1386):
 2. A packed load straddles areas: 3 areas = 204 series = calls of 50, 50, 50, 50, 4. Refused at the third call (the
    daily limit), it writes the 1 area whose 68 series were all asked in the first two (100 series), says why it
    stopped, and makes no more calls.
-3. The data file in the api's tree (`app/wagecalc/seed/bls_refdata.json`) matches the checksum beside it, carries the
+3. The data file in the api's tree (`app/wagecalc/seed/bls_refdata.json.gz` since D-1399) matches the checksum beside it, carries the
    six tables in order, and each table's columns, count and digest equal the bench's tables now (the file is current).
-4. A copy with one character changed is refused by the checksum before anything is read into the database.
+4. A copy with one byte changed is refused by the checksum before anything is read into the database.
 5. Bench only: under staging settings (`ENVIRONMENT=staging`), production (`ENVIRONMENT=production`) and
    `PRODUCTION=true` on local, `calls_allowed` is False and `bls.series` and the refresh refuse with the bench-only
    words before any request (the key as the bench holds it); on the bench's own settings it is True. The script's
@@ -26,14 +26,15 @@ Worked by hand (DECISIONS D-1385, D-1386):
 
 D-1392 (2026-12-03, item 1): OEWS from BLS's published May 2025 files (`test-data-local/wage/bls/oesm25ma.zip`,
 `oesm25st.zip`), no BLS call:
-7. The files' verify against every row loaded (read only): 579 areas loaded and in the files (51 states, 135 nonmetro,
-   393 metros), 9,510 rows compared (6,741 loaded by the API + 2,769 loaded from the files), 0 differences; the one
-   loaded area the files lack is the national (no national file placed: its 34 API rows kept).
-8. The 171 metros came from the files: one load record of kind oews whose source names the files and "171 areas", 2,769
+7. (D-1399: the full verify of the published files left the QT. It runs on a load, `oews-file`, and on a Refresh only;
+   the QT checks the loaded data against the data file instead, rows 3 and 10.)
+8. The 171 metros came from the files: a load record of kind oews whose source names the files and "171 areas", 2,769
    rows, survey May 2025; median and p75 only: the metro rows carrying a mean stay the 295 the API loaded before.
+   D-1399: the national's 34 rows verified equal to `oesm25nat.zip` (mean, median, p75): a second record, 34 rows,
+   "BLS file oesm25nat.zip: national verified equal, none written"; the national still 34 rows, each with a mean.
 9. Areas still to load for May 2025: 0 (the card's "0 still to load").
-10. The data file re-exported after the load is current: an export to /tmp gives byte for byte the committed file, and
-    its sha256 is the one in `bls_refdata.json.sha256`.
+10. The data file re-exported is current: an export to /tmp gives byte for byte the committed file, and its sha256 is
+    the one in `bls_refdata.json.gz.sha256`. D-1399: the file is gzip with no time and no file name in its header.
 """
 
 import guard  # noqa: F401  (first: the protected projects refused before any read or write, D-667)
@@ -124,10 +125,10 @@ def main() -> int:
     rows += 2
 
     # 4
-    bad = Path("/tmp/qt-bls-d1386.json")
+    bad = Path("/tmp/qt-bls-d1386.json.gz")
     data = bls_load.DATA_FILE.read_bytes()
-    at = data.index(b"Abilene")
-    bad.write_bytes(data[:at] + b"X" + data[at + 1:])
+    at = len(data) // 2
+    bad.write_bytes(data[:at] + bytes([data[at] ^ 1]) + data[at + 1:])
     shutil.copyfile(bls_load.checksum_path(bls_load.DATA_FILE), bls_load.checksum_path(bad))
     try:
         bls_load.verify_file(bad)
@@ -137,7 +138,8 @@ def main() -> int:
     finally:
         bad.unlink(missing_ok=True)
         bls_load.checksum_path(bad).unlink(missing_ok=True)
-    check(wrong, "d1386-file-tampered-refused", refused, "qt-bls-d1386.json does not match its checksum: not imported")
+    check(wrong, "d1386-file-tampered-refused", refused,
+          "qt-bls-d1386.json.gz does not match its checksum: not imported")
     rows += 1
 
     # 5
@@ -213,36 +215,32 @@ def main() -> int:
           (waiting, 0, 0, "BlsError"))
     rows += 2
 
-    # 7-10 (D-1392): the published files, read only
+    # 8-10 (D-1392, D-1399): what the published files loaded, from the tables only (no file is parsed here)
     from datetime import date
 
     may25 = date(2025, 5, 1)
-    files = [p for p, s in bls_load.oews_files() if s == may25]
-    found: dict = {}
-    for path in files:
-        found.update(bls_load.read_oews_file(path, socs)[1])
     with sync_engine.connect() as conn:
-        fc = bls_load.verify_oews_file(conn, may25, found)
-        kinds = dict(conn.execute(text(
-            "SELECT kind, count(*) FROM refdata.ref_oews_area a WHERE vintage = (SELECT max(vintage) FROM "
-            "refdata.ref_oews_area) AND EXISTS (SELECT 1 FROM refdata.ref_oews o WHERE o.area_type = 'M' AND "
-            "o.area_code = a.area_code AND o.survey_month = :m) GROUP BY kind"), {"m": may25}).all())
-        states = conn.execute(text("SELECT count(DISTINCT area_code) FROM refdata.ref_oews WHERE area_type = 'S' "
-                                   "AND survey_month = :m"), {"m": may25}).scalar()
         rec = conn.execute(text(
             "SELECT kind, rows, data_as_of, source LIKE '%, 171 areas' FROM refdata.ref_bls_load "
             "WHERE source LIKE 'BLS file %' ORDER BY id")).all()
         means = conn.execute(text("SELECT count(*) FROM refdata.ref_oews WHERE area_type = 'M' AND mean IS NOT NULL "
                                   "AND survey_month = :m"), {"m": may25}).scalar()
+        national = tuple(conn.execute(text(
+            "SELECT count(*), count(mean), count(median), count(p75) FROM refdata.ref_oews WHERE area_type = 'N' "
+            "AND survey_month = :m"), {"m": may25}).one())
+        verified = conn.execute(text(
+            "SELECT count(*) FROM refdata.ref_bls_load WHERE kind = 'oews' AND rows = 34 AND data_as_of = :m AND "
+            "source = 'BLS file oesm25nat.zip: national verified equal, none written'"), {"m": may25}).scalar()
         left = len(bls_load.pending_areas(conn, may25))
-    check(wrong, "d1392-file-verify",
-          (sorted(p.name for p in files), fc.areas, states, kinds, fc.rows, fc.differences, fc.not_in_files),
-          (["oesm25ma.zip", "oesm25st.zip"], 579, 51, {"metro": 393, "nonmetro": 135}, 9510, 0, [("N", "0000000")]))
-    check(wrong, "d1392-file-loaded-metros", ([tuple(r) for r in rec], means), ([("oews", 2769, may25, True)], 295))
+    check(wrong, "d1392-file-loaded-metros", ([tuple(r) for r in rec], means),
+          ([("oews", 2769, may25, True), ("oews", 34, may25, False)], 295))
+    check(wrong, "d1399-national-verified", (national, verified), ((34, 34, 34, 34), 1))
     check(wrong, "d1392-areas-left", left, 0)
-    rows += 3
+    check(wrong, "d1399-file-gzip-plain-header", (bls_load.DATA_FILE.name, data[:4], data[4:8]),
+          ("bls_refdata.json.gz", b"\x1f\x8b\x08\x00", b"\x00\x00\x00\x00"))
+    rows += 4
 
-    out_path = Path("/tmp/qt-bls-d1392.json")
+    out_path = Path("/tmp/qt-bls-d1392.json.gz")
     try:
         with sync_engine.begin() as conn:
             checksum, _ = bls_load.export_file(conn, out_path)
@@ -256,10 +254,11 @@ def main() -> int:
 
     for w in wrong:
         print(w)
-    print(f"BLS packed calls, the data file and the published May files (D-1385, D-1386, D-1392): {rows} rows, "
+    print(f"BLS packed calls, the data file and the published May files (D-1385, D-1386, D-1392, D-1399): {rows} rows, "
           f"{'all right' if not wrong else f'{len(wrong)} wrong'} (171 metros 240 -> 233 calls; full survey "
-          f"{len(everything)} areas 790 calls; file {len(data)} bytes, {sum(t['count'] for t in body['tables'])} rows; "
-          f"May 2025 files: {fc.rows} rows equal, {left} areas left, sha256 {committed[:12]})")
+          f"{len(everything)} areas 790 calls; file {len(data)} bytes gzipped, "
+          f"{sum(t['count'] for t in body['tables'])} rows, loaded data equal to it; national verified from its file; "
+          f"{left} areas left, sha256 {committed[:12]})")
     return 1 if wrong else 0
 
 

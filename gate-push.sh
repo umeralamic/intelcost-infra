@@ -14,7 +14,8 @@
 #      rebase, cherry-pick, revert or am is in progress; no quantity table is running. So the working tree is
 #      exactly HEAD's tree.
 #   2. A gate pass stamp E:\Intelcost\.private\gate-pass\<kind>-<HEAD's tree> at most 24 h old (gate-commit.sh
-#      writes it, for a commit or --verify-head) is used as it is. Without one, it runs
+#      writes it, for a commit or --verify-head) is used as it is, when its "gates <hash>" line equals the gate
+#      scripts as they are now (D-1400, `qt-key.sh --gates`; a stamp from before a gate change is void). Without one, it runs
 #      `gate-commit.sh <kind> --owner D-NNNN --verify-head`: every gate on HEAD, every exit code read; any non-zero
 #      stops here, nothing is pushed. The gates per repo are listed in gate-commit.sh (infra: shell, node and python
 #      syntax, the names scan, no private file, a QT pass when the range touches its inputs; market: the names scan
@@ -72,17 +73,27 @@ fresh() { # <file>: exists and at most 24 h old (the hook's own test)
   t=$(date -r "$1" +%s 2>/dev/null) || return 1
   [ $(($(date -u +%s) - t)) -le 86400 ]
 }
+# D-1400: a stamp counts only when its "gates <hash>" line equals the gate scripts as they are now (qt-key.sh
+# --gates); a stamp from before a gate change, or from before D-1400 (no such line), is void and the gates run fresh.
+gates_now="$(bash "$here/qt-key.sh" --gates)" || gates_now=''
+valid() { # <file>: fresh and made by the current gate scripts
+  fresh "$1" && [ -n "$gates_now" ] && grep -qx "gates $gates_now" "$1"
+}
 
-if fresh "$PASS_DIR/$kind-$tree"; then
-  echo "gate-push: a gate pass exists for HEAD's tree ${tree:0:12}: $(cat "$PASS_DIR/$kind-$tree")"
+if valid "$PASS_DIR/$kind-$tree"; then
+  echo "gate-push: a gate pass exists for HEAD's tree ${tree:0:12} (gates ${gates_now:0:12}): $(head -1 "$PASS_DIR/$kind-$tree")"
 else
-  echo "gate-push: no gate pass for HEAD's tree ${tree:0:12}; running every gate on HEAD"
+  if fresh "$PASS_DIR/$kind-$tree"; then
+    echo "gate-push: the pass for HEAD's tree ${tree:0:12} is void: made by other gate scripts than the current ones (gates ${gates_now:0:12}, D-1400); running every gate on HEAD"
+  else
+    echo "gate-push: no gate pass for HEAD's tree ${tree:0:12}; running every gate on HEAD"
+  fi
   bash "$here/gate-commit.sh" "$kind" --owner "$owner" --verify-head || die "a gate failed on HEAD ${head:0:12}: nothing pushed"
 fi
 
 [ "$(git rev-parse HEAD)" = "$head" ] || die "HEAD moved during the gates"
 [ "$(git rev-parse 'umer-dev^{tree}')" = "$tree" ] || die "umer-dev's tree is not the gated tree"
-fresh "$PASS_DIR/$kind-$tree" || die "no gate pass for ${tree:0:12} after the gates"
+valid "$PASS_DIR/$kind-$tree" || die "no gate pass by the current gate scripts for ${tree:0:12} after the gates"
 
 echo "gate-push: git push ${dry[*]} origin umer-dev ($kind, HEAD ${head:0:12}, tree ${tree:0:12})"
 git push "${dry[@]}" origin umer-dev
