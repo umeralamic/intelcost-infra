@@ -276,6 +276,13 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-noaa-d1396.py" </
 # (everyone but the viewer, refused 403), owner and admins only, specific members (a viewer cannot be ticked),
 # Members may share pricing off (a member's Show pricing on refused), the list of links, an admin's Turn off.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-share-d1403.py" </dev/null || { echo "FAIL  who may share a project (above)"; exit 1; }
+# D-1407 (the founder's D-1404 item 5): account and workspace deletion, through the api in its own process on
+# throwaways removed at the end, billing at the bench's Stripe fake, one probe file in the bench bucket under the
+# throwaway workspace's prefix: owner-with-members refused, member and wrong name refused, deleted at once (billing,
+# links, members), restored, erased after a forced grace end (file, rows gone, record kept); an account deleted,
+# restored, erased; another workspace's work kept with the account anonymized; a failed file delete retried and the
+# admins told once at the third night (captured and rolled back).
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-deletion-d1407.py" </dev/null || { echo "FAIL  account and workspace deletion (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.

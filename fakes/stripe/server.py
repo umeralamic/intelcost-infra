@@ -10,6 +10,8 @@ It serves the three calls the api makes, shaped like Stripe's, on Stripe's paths
                                         sent as customer.subscription.updated
     GET  /v1/subscriptions/<id>         the subscription, period dates on its items only (the
                                         newer API's shape, so the api's Q14 path is the one used)
+    DELETE /v1/subscriptions/<id>       cancel now (D-1407: a deleted workspace stops billing at
+                                        once), customer.subscription.deleted
 
 and plays Stripe's side of the webhook: every event it sends is signed with the bench's signing
 secret (`Stripe-Signature: t=..,v1=HMAC-SHA256(secret, "t.payload")`) and POSTed to the api.
@@ -440,6 +442,22 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._missing("route")
 
+    def do_DELETE(self) -> None:  # noqa: N802  (the stdlib names it)
+        # Stripe's own cancel (D-1407: a deleted workspace stops billing at once): the
+        # subscription ends now and `customer.subscription.deleted` goes to the api, as the
+        # control route `/_fake/subscriptions/<id>/delete` sends it.
+        path = urlparse(self.path).path
+        if m := re.fullmatch(r"/v1/subscriptions/([\w]+)", path):
+            if not self._authorized():
+                return
+            sub = subscriptions.get(m[1]) if m[1] not in hidden else None
+            if not sub:
+                return self._missing("subscription")
+            sub.update(status="canceled", canceled_at=int(time.time()))
+            emit("customer.subscription.deleted", sub)
+            self._send(200, sub)
+        else:
+            self._missing("route")
 
 if __name__ == "__main__":
     print(f"stripe-fake on :12111, webhooks to {WEBHOOK_URL}")
