@@ -33,6 +33,7 @@ import { WATER_CASES, checkWater, runWater } from "./lib/water-cases.mjs";
 import { DEWATER_CASES, checkDewater, runDewater } from "./lib/dewater-cases.mjs";
 import { WEATHER_CASES, checkWeather, runWeather } from "./lib/weather-cases.mjs";
 import { LEGEND_CASES, checkLegend, runLegend } from "./lib/legend-cases.mjs";
+import { VIEWPORT_BOX_CASES, VIEWPORT_CASES, checkViewports, runViewports } from "./lib/viewport-cases.mjs";
 
 const HERE = "/drive/scripts";
 // This run's own folder (D-891), made by quantity-table.sh.
@@ -45,6 +46,8 @@ if (process.env.GEN === "1") {
   await writeFile(`${QT}/seed.json`, JSON.stringify(COST_CASES.filter((c) => c.kind === "seed")));
   await writeFile(`${QT}/subitems.json`, JSON.stringify(SUBITEM_CASES.filter((c) => !c.parse && !c.offers)));
   await writeFile(`${QT}/fxsystem.json`, JSON.stringify(FORMULA_SYSTEM_CASES));
+  // D-1412: the viewport rows for the api's engine (drives/qt-viewports-d1412.py pure).
+  await writeFile(`${QT}/viewports.json`, JSON.stringify({ cases: VIEWPORT_CASES, boxes: VIEWPORT_BOX_CASES }));
   // D-642: each row carries its base row's shapes.
   await writeFile(`${QT}/scaleundo.json`, JSON.stringify(SCALE_UNDO_CASES.map((c) => ({ ...CASES.find((r) => r.id === c.base), ...c }))));
   console.log(`GEN ${CASES.length} cases, ${REGISTER_CASES.length} registration rows`);
@@ -58,6 +61,7 @@ const pythonSite = new Map(JSON.parse(await readFile(`${QT}/site-py.json`, "utf8
 const pythonSub = new Map(JSON.parse(await readFile(`${QT}/subitems-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonScale = new Map(JSON.parse(await readFile(`${QT}/scaleundo-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const pythonFx = new Map(JSON.parse(await readFile(`${QT}/fxsystem-py.json`, "utf8")).map((r) => [r.id, r.value]));
+const pythonViewports = JSON.parse(await readFile(`${QT}/viewports-py.json`, "utf8"));
 const pythonSeed = Object.fromEntries(JSON.parse(await readFile(`${QT}/seed-py.json`, "utf8")).map((r) => [r.id, r.value]));
 const browser = await openBrowser();
 let web;
@@ -67,6 +71,7 @@ let waterAnswers;
 let dewaterAnswers;
 let weatherAnswers;
 let legendAnswers;
+let viewportAnswers;
 let earth;
 let reg;
 let site;
@@ -127,6 +132,8 @@ try {
   weatherAnswers = await runWeather(page, JSON.parse(await readFile(`${QT}/eqlib.json`, "utf8")));
   // D-1405: the Legend lists every item drawn on the sheet (its own rows, Site Prep strips, items from linked sheets).
   legendAnswers = await runLegend(page);
+  // D-1412: which viewport each shape takes and the item measured with each shape at its own scale.
+  viewportAnswers = await runViewports(page);
   // The cost rows: F9's money through the app's own lib/estimate.
   costs = await page.evaluate(async ([cases, envItems, envSheet, seedCopies]) => {
     const costing = await import("/src/lib/estimate/costing.ts");
@@ -3529,6 +3536,7 @@ checkWater(waterAnswers, wrong);
 checkDewater(dewaterAnswers, wrong);
 checkWeather(weatherAnswers, wrong);
 checkLegend(legendAnswers, wrong);
+checkViewports(viewportAnswers, pythonViewports, wrong);
 
 const worked = CASES.filter((c) => c.expect !== undefined).length;
 if (disagree.length || wrong.length) {
@@ -3543,3 +3551,4 @@ console.log(`water and rain (D-1288): ${WATER_CASES.length} rows, all right`);
 console.log(`dewatering wired (D-1331): ${DEWATER_CASES.length} rows, all right`);
 console.log(`weather and pay items (D-1331): ${WEATHER_CASES.length} rows, all right`);
 console.log(`legend rows (D-1405): ${LEGEND_CASES.length} sheets, every kind drawn has its row, all right`);
+console.log(`viewport rows (D-1412): ${VIEWPORT_CASES.length} shapes and items and ${VIEWPORT_BOX_CASES.length} boxes, both engines equal and right`);

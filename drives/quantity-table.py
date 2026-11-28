@@ -283,10 +283,13 @@ def subitem(case: dict) -> float | dict:
     else:
         page = (float(case["page"][0]), float(case["page"][1]))
         runs = [
-            SimpleNamespace(vertices_json=s, shape_meta={"closed": True} if kind is TakeoffItemType.SF else None, sheet_id=1, role="add", geom_type=kind)
+            SimpleNamespace(vertices_json=s, shape_meta={"closed": True} if kind is TakeoffItemType.SF else None, sheet_id=1, role="add", geom_type=kind, viewport_uuid=None, viewport_flag=None)
             for s in case["shapes"]
         ]
-        prims = sub_items.parent_primitives(kind, runs, {1: (float(case["fpp"]), page)})  # type: ignore[arg-type]
+        # D-1412: the sheet as a frame (its page and sheet scale, no viewport).
+        from app.features.takeoff import viewport as vp
+
+        prims = sub_items.parent_primitives(kind, runs, {1: vp.Frame(page, float(case["fpp"]))})  # type: ignore[arg-type]
         parent = prims["area_sf"] if kind is TakeoffItemType.SF else prims["linear_ft"]
         env = FormulaEnv(parent=parent, dims=dims, **prims)  # type: ignore[arg-type]
     result = evaluate(case["formula"], env)

@@ -200,6 +200,8 @@ docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py se
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py subitems" <$QT/subitems.json >$QT/subitems-py.json || { echo "FAIL  the api's formula engine did not read the sub-item rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py fxsystem" <$QT/fxsystem.json >$QT/fxsystem-py.json || { echo "FAIL  the api's formula system did not read the Phase E rows"; exit 1; }
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py scaleundo" <$QT/scaleundo.json >$QT/scaleundo-py.json || { echo "FAIL  the api did not store the scale undo rows"; exit 1; }
+# D-1412 (viewports Run A): the viewport rows through the api's own viewport.py, compared by the browser's second pass.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-viewports-d1412.py pure" <$QT/viewports.json >$QT/viewports-py.json || { echo "FAIL  the api's viewport engine did not read its rows"; exit 1; }
 # The wage roles a determination lists (D-753 option C): the api's wage engine against the hand-worked rows.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py roles" </dev/null || { echo "FAIL  wage roles (above)"; exit 1; }
 # The wage core (D-1032): Harris County open shop (W1), its foremen (W7) and the ECI escalation (W12).
@@ -283,6 +285,12 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-share-d1403.py" <
 # restored, erased; another workspace's work kept with the account anonymized; a failed file delete retried and the
 # admins told once at the third night (captured and rolled back).
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-deletion-d1407.py" </dev/null || { echo "FAIL  account and workspace deletion (above)"; exit 1; }
+# D-1412 (viewports Run A): through the real routes on a throwaway removed at the end (a blank page in the bench bucket,
+# its files cleared): a new unscaled viewport moves nothing; each viewport's scale recomputes only its shapes; the inner
+# of two nested boxes wins; a partial overlap refused 422; the crossing line flagged, counted on its row and measured at
+# the sheet scale; a box resized so its line crosses; a box deleted, its line back to the box around it; one viewport's
+# scale undone alone; no sheet scale (outside 0 and stale); a sheet with no viewport as before.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-viewports-d1412.py api" </dev/null || { echo "FAIL  viewports through the api (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
