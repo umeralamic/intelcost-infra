@@ -15,7 +15,8 @@
 #      exactly HEAD's tree.
 #   2. A gate pass stamp E:\Intelcost\.private\gate-pass\<kind>-<HEAD's tree> at most 24 h old (gate-commit.sh
 #      writes it, for a commit or --verify-head) is used as it is, when its "gates <hash>" line equals the gate
-#      scripts as they are now (D-1400, `qt-key.sh --gates`; a stamp from before a gate change is void). Without one, it runs
+#      scripts as they are now (D-1400, `qt-key.sh --gates`, which since D-1402 holds lock.sh and the live hooks too;
+#      a stamp from before a gate change is void). Without one, it runs
 #      `gate-commit.sh <kind> --owner D-NNNN --verify-head`: every gate on HEAD, every exit code read; any non-zero
 #      stops here, nothing is pushed. The gates per repo are listed in gate-commit.sh (infra: shell, node and python
 #      syntax, the names scan, no private file, a QT pass when the range touches its inputs; market: the names scan

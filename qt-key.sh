@@ -10,10 +10,11 @@
 #   ./qt-key.sh --touches    exit 0 when the staged changes touch one of these files (else 1)
 #   ./qt-key.sh --names-touch   exit 0 when a path on stdin is one of these files (D-1381, the infra push gate)
 #   ./qt-key.sh --gates      the gates hash (D-1400, the founder's D-1397 10: a gate change voids older pass stamps of
-#                            its kind): one hash over gate-commit.sh, gate-push.sh and qt-key.sh as they are on disk
-#                            here. gate-commit.sh writes it into every app, api, infra and market stamp as
-#                            "gates <hash>"; the hook and gate-push.sh count a stamp only when it equals this. A QT
-#                            stamp is keyed by name to the QT inputs, which hold these three files already.
+#                            its kind): one hash over gate-commit.sh, gate-push.sh, qt-key.sh and lock.sh as they are
+#                            on disk here and the LIVE hooks under their mirror paths (D-1402, the founder: the hooks
+#                            and lock.sh count as gate scripts). gate-commit.sh writes it into every app, api, infra
+#                            and market stamp as "gates <hash>"; the hook and gate-push.sh count a stamp only when it
+#                            equals this. A QT stamp is keyed by name to the QT inputs, which hold these files already.
 #
 # A QT that exits 0 with 0 FAIL lines writes E:\Intelcost\.private\gate-pass\qt-<key> (its --worktree key, the same
 # at its start and its end); the founder gate hook lets an infra commit that touches one of these files through only
@@ -23,7 +24,7 @@
 set -u
 cd "$(dirname "$0")" || exit 2
 INPUTS=(quantity-table.sh browser/quantity-table.mjs browser/lib drives lock.sh gate-commit.sh gate-push.sh qt-key.sh)
-GATES=(gate-commit.sh gate-push.sh qt-key.sh)
+GATES=(gate-commit.sh gate-push.sh qt-key.sh lock.sh)
 HOOKS_MIRROR=workspace/.claude/hooks
 HOOKS_LIVE="${INTELCOST_HOOKS_LIVE:-../.claude/hooks}"
 RE='^(quantity-table\.sh|browser/quantity-table\.mjs|browser/lib/|drives/|lock\.sh|gate-commit\.sh|gate-push\.sh|qt-key\.sh|workspace/\.claude/hooks/)'
@@ -51,10 +52,17 @@ case "${1:-}" in
     # reads the pushed range's names this way).
     grep -Eq "$RE" ;;
   --gates)
-    # D-1400: each gate script's blob id beside its name, hashed once. Any missing file fails (no hash: every stamp
-    # counts as void).
+    # D-1400: each gate script's blob id beside its name, hashed once. D-1402: lock.sh and the live hooks (under
+    # their mirror paths, as --worktree reads them) are gate scripts too. Any missing file, or no live hook, fails
+    # (no hash: every stamp counts as void).
     for p in "${GATES[@]}"; do [ -f "$p" ] || { echo "qt-key: no $p" >&2; exit 2; }; done
-    paste -d' ' <(printf '%s\n' "${GATES[@]}" | git hash-object --stdin-paths) <(printf '%s\n' "${GATES[@]}") |
-      git hash-object --stdin ;;
+    hooks=$(for p in "$HOOKS_LIVE"/*; do [ -f "$p" ] && echo "$p"; done)
+    [ -n "$hooks" ] || { echo "qt-key: no live hooks in $HOOKS_LIVE" >&2; exit 2; }
+    paths=$(printf '%s\n' "${GATES[@]}" "$hooks")
+    names=$(printf '%s\n' "${GATES[@]}"; printf '%s\n' "$hooks" | while IFS= read -r p; do echo "$HOOKS_MIRROR/${p##*/}"; done)
+    ids=$(printf '%s\n' "$paths" | git hash-object --stdin-paths) || { echo "qt-key: a gate file could not be hashed" >&2; exit 2; }
+    [ "$(printf '%s\n' "$ids" | grep -c .)" = "$(printf '%s\n' "$names" | grep -c .)" ] ||
+      { echo "qt-key: a gate file could not be hashed" >&2; exit 2; }
+    paste -d' ' <(printf '%s\n' "$ids") <(printf '%s\n' "$names") | LC_ALL=C sort -u -k2 | git hash-object --stdin ;;
   *) echo "usage: qt-key.sh --worktree | --index | --touches | --names-touch | --gates"; exit 2 ;;
 esac

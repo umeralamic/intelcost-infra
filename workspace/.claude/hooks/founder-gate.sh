@@ -37,8 +37,8 @@
 # `intelcost-infra/gate-push.sh infra|market --owner D-NNNN` (gate-commit.sh --verify-head lists their gates).
 #
 # D-1400 (the founder's D-1397 10): an app, api, infra or market stamp counts only when its "gates <hash>" line
-# equals intelcost-infra/qt-key.sh --gates now (the hash of gate-commit.sh, gate-push.sh, qt-key.sh): a gate change
-# voids older stamps of its kind.
+# equals intelcost-infra/qt-key.sh --gates now (the hash of gate-commit.sh, gate-push.sh, qt-key.sh and, since
+# D-1402, lock.sh and these live hooks): a gate change voids older stamps of its kind.
 #
 # D-1388 (the founder's D-1384 Q6): every git push in the legacy repo (intelcost/, read-only: fetch and pull only)
 # is refused, in any form, --dry-run included.
@@ -109,7 +109,8 @@ fresh() { # <file>: exists and at most 24 h old
   [ $(($(date -u +%s) - t)) -le 86400 ]
 }
 # D-1400 (the founder's D-1397 10): an app, api, infra or market stamp counts only when its "gates <hash>" line equals
-# the gate scripts as they are now (intelcost-infra/qt-key.sh --gates: gate-commit.sh, gate-push.sh, qt-key.sh). A
+# the gate scripts as they are now (intelcost-infra/qt-key.sh --gates: gate-commit.sh, gate-push.sh, qt-key.sh,
+# lock.sh and the live hooks, D-1402). A
 # stamp from before a gate change, or without the line, is void. No hash (the script missing or failing): every
 # stamp is void (fail closed). QT stamps are keyed by name to the QT inputs, which hold those scripts already.
 gates_now=''

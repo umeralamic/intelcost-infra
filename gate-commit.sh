@@ -22,7 +22,7 @@
 #
 # D-1400 (the founder's D-1397 10: a gate change voids older pass stamps of its kind): every stamp this writes has a
 # second line "gates <hash>", the hash of the gate scripts that produced it (`qt-key.sh --gates`: gate-commit.sh,
-# gate-push.sh and qt-key.sh as on disk). The hook and gate-push.sh count a stamp only when that line equals the
+# gate-push.sh and qt-key.sh as on disk; since D-1402 also lock.sh and the live hooks). The hook and gate-push.sh count a stamp only when that line equals the
 # current hash, so a stamp made before a change to any of them no longer counts. A gate script that changes while the
 # gates run leaves no stamp.
 #
@@ -329,7 +329,7 @@ fi
 # Every gate 0. The tree must still be the one the gates read.
 [ "$(git write-tree)" = "$tree" ] || die "the index changed during the gates"
 [ -z "$(git diff --name-only)$(git ls-files --others --exclude-standard)" ] || die "the working tree changed during the gates"
-[ "$(bash "$here/qt-key.sh" --gates)" = "$gates_hash" ] || die "a gate script (gate-commit.sh, gate-push.sh, qt-key.sh) changed during the gates: no pass stamp"
+[ "$(bash "$here/qt-key.sh" --gates)" = "$gates_hash" ] || die "a gate script (gate-commit.sh, gate-push.sh, qt-key.sh, lock.sh or a live hook) changed during the gates: no pass stamp"
 mkdir -p "$PASS_DIR"
 find "$PASS_DIR" -maxdepth 1 -type f -mtime +2 -delete 2>/dev/null
 printf 'gate pass %s tree %s head %s, %s to %s, owner %s:%s\ngates %s\n' "$repo_kind" "$tree" "$(git rev-parse HEAD)" "$start" \
