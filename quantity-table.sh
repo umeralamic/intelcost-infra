@@ -271,6 +271,11 @@ docker compose exec -T api sh -lc "cd /srv && python drives/qt-bls-d1386.py" </d
 # stored, sources file 9,205 / seed 34 / ads 9, one load row with the archive's sha256; reads with fetch for a file, a
 # seeded and an ads station and a Houston point's snow and frost series make 0 NOAA calls; the fallback, stubbed, 1 call.
 docker compose exec -T api sh -lc "cd /srv && python drives/qt-noaa-d1396.py" </dev/null || { echo "FAIL  NOAA normals from the archive (above)"; exit 1; }
+# D-1403 (the founder's parts a and b): who may share a project, through the api in its own process on a throwaway
+# workspace with an owner, an admin, an estimator, a collaborator and a viewer, removed at the end: the default
+# (everyone but the viewer, refused 403), owner and admins only, specific members (a viewer cannot be ticked),
+# Members may share pricing off (a member's Show pricing on refused), the list of links, an admin's Turn off.
+docker compose exec -T api sh -lc "cd /srv && python drives/qt-share-d1403.py" </dev/null || { echo "FAIL  who may share a project (above)"; exit 1; }
 # Union agreements (D-1041): an agreement's craft through the engine, cash vs plan fringe, a craft not in it location-adjusted.
 docker compose exec -T api sh -lc "cd /srv && python drives/quantity-table.py union" </dev/null || { echo "FAIL  union (above)"; exit 1; }
 # Typed values on a site machine across Apply tier (D-758 follow-up): carried, or named in the notice.
