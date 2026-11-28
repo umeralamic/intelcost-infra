@@ -142,7 +142,8 @@ No comparison against the legacy app before building a screen (D-1307): legacy i
      `intelcost-infra/gate-push.sh app|api|infra|market --owner D-NNNN`: it runs that repo's gates on a clean HEAD
      (unless they passed on that exact tree in the last 24 h) and pushes `origin umer-dev`, never a force. **A pass stamp
      counts only under the gate scripts that made it (D-1400):** each app, api, infra and market stamp carries the hash
-     of `gate-commit.sh`, `gate-push.sh` and `qt-key.sh` (`qt-key.sh --gates`), and the hook and `gate-push.sh` treat a
+     of `gate-commit.sh`, `gate-push.sh`, `qt-key.sh`, `lock.sh` and every live hook in `.claude/hooks/`
+     (`qt-key.sh --gates`; the hooks and `lock.sh` since D-1402), and the hook and `gate-push.sh` treat a
      stamp from before a change to any of them as void, so the gates run fresh; a QT stamp is keyed to the QT inputs,
      which hold those scripts. Infra's gate:
      shell, node and python syntax, the client and book names scan (every hit refuses, already-pushed ones too, and any

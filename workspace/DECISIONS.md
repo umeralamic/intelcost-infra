@@ -38743,3 +38743,321 @@ d1396c4e8a17). No external call. The joint QT's three hours were the laptop asle
 (D-1401; beat, worker and redis logs); every bench service came back with no restart. Gates on HEAD (fresh, D-1400):
 app app-2ecd9cd1943b, api api-99af539540ef, market market-1e8e467c85be, all gates 7d53a7526643. Founder $0.00 on every
 label. Fingerprint eacd2a92b3e281e2 at the start. Open question in morning-report-2026-12-04/NEXT-RUN.md.
+
+## D-1402
+### D-1402 — The hooks and `lock.sh` count as gate scripts (2026-11-27, logged by the main session; build next run)
+Founder's answer to the 12-04 open question (D-1400 Q1), verbatim: "Yes: changes to the hooks and lock.sh count as gate
+scripts; they cancel older app, api, infra and marketing gate passes. Prove with a deliberate refused attempt. Log it;
+next run."
+- `qt-key.sh --gates` hashes, besides `gate-commit.sh`, `gate-push.sh` and `qt-key.sh`, the live hooks
+  (`.claude/hooks/`, equal to the mirror `workspace/.claude/hooks/`) and `lock.sh`. A change to any of them voids every
+  older app, api, infra and market pass stamp, so the gates run fresh (as D-1400 for the gate scripts).
+- Proof: after the change, a deliberate commit or push on a stamp made before it is refused, and the refusal is shown in
+  the report; then the gates run fresh and pass.
+- Not built tonight: queued as item 1 of the next run (morning-report-2026-12-04/NEXT-RUN.md).
+
+## D-1403
+### D-1403 — Who may share a project: everyone but viewers by default, set per workspace (2026-11-27, logged by the main session; build next run)
+Founder, verbatim: "project sharing is only limited to owner and admin of workspace, i want it for everyone except viewer
+by default, but i want in workspace settings an option to change it for users, allow all, specific or none so admin or
+workspace owner can change it. by default it remains shareable for all in workspace except view only member".
+Today every Share write (`share/routes.py`: create, change, delete, access key, regenerate, preview, invites) requires
+`canManageWorkspace`, so only the owner and admins share.
+- **Default:** every member except a viewer may share a project outside the company: turn the link on or off, change its
+  settings (live work, pricing, GPS Export, saving a copy, layers, expiry), set, show or clear the access key,
+  regenerate, preview as viewer, and send, resend or cancel invites.
+- **Workspace setting "Who can share projects"**, changed only by the owner or an admin (`canManageWorkspace`):
+  1. All members except viewers (the default);
+  2. Specific members (the owner or an admin ticks members; a viewer cannot be ticked);
+  3. Owner and admins only (the founder's "none": the owner and admins always keep sharing, so a workspace can never
+     lose it entirely).
+- A viewer never shares, whatever the setting. The api enforces it (one check used by every Share write); the app hides
+  or disables the Share controls for someone not allowed, with one line saying who decides.
+- Migration before code: a workspace column for the mode (default "all but viewers") and a table of allowed members for
+  "Specific members"; no existing share link changes.
+- Proof: a smoke with throwaway workspaces, each mode, one estimator, one collaborator and one viewer; the refused
+  requests answered by the api (403), not only hidden in the app.
+
+## D-1403 (part b)
+### D-1403 (part b) — Founder's additions before building (2026-11-27, logged by the main session; build next run)
+Founder, verbatim:
+"D-1403 additions before building:
+1. "None" = owner and admins only: correct.
+2. Default "All members except viewers" INCLUDES collaborators. Only view-only members are excluded.
+3. Pricing: anyone allowed to share can turn on "Show pricing" and "Allow saving a copy" by default. Add a workspace setting "Members may share pricing" (default ON) that the owner/admin can switch off; when off, only owner/admin can turn on Show pricing. The backend enforces it.
+4. Owner/admin see all active share links in the workspace (project, created by, when, what's on, last opened) and can turn any off, including links by people who have left. Each link records who created or changed it.
+5. "Invite to workspace" and "Manage members" stay owner/admin only; this change covers project sharing only.
+Test: each of the three settings with a full member, a collaborator and a viewer; the viewer is refused by the backend; with "Members may share pricing" off, a member turning on Show pricing is refused; an admin turning off a member's link."
+How it is built:
+- **Sharers:** every role but `viewer` under the default, collaborators included (part a's list stands).
+- **"Members may share pricing"** (workspace setting, default on, owner or admin changes it): when off, the api refuses
+  a non-admin's request that turns Show pricing on (403); a link already showing pricing stays as it is, and an admin
+  can turn it off. "Allow saving a copy" is not governed by it.
+- **Workspace share links list** (workspace settings, owner and admin only): every active link in the workspace with
+  its project, who created it, when, what is on (live work, pricing, GPS Export, saving a copy, access key, expiry),
+  last opened, and who last changed it; a "Turn off" on each, working for links whose creator has left. The share link
+  gains `created_by` and `updated_by` (migration before code; existing links read "before this was recorded").
+- **Out of scope:** "Invite to workspace" and "Manage members" stay owner and admin only.
+- **Proof (smoke):** each of the three settings with a full member, a collaborator and a viewer (throwaways); the viewer
+  refused by the api (403); with "Members may share pricing" off, a member turning on Show pricing refused by the api;
+  an admin turning off a member's link from the list.
+
+## D-1404
+### D-1404 — Night run 2026-12-05 (2026-11-28, from 00:22 UTC; logged by the main session)
+Founder's brief, verbatim:
+"RUN, unattended, NO time limit, from morning-report-2026-12-04/NEXT-RUN.md plus the items below, in this order. Standing rules as always (hard rules 12–14, D-1401 power check and heartbeats; commits/pushes through the gate helpers; no client or book names; no keys; no Live moves without my OK; founder projects read-only; throwaways purged). Fingerprint baseline eacd2a92b3e281e2; if different, run the read-only check; my own edits → adopt; anything else → stop and report. Max 2 builders; checkpoint after every item; if usage runs low, stop at an item boundary and close out.
+1. Gate scripts (NEXT-RUN item 1).
+2. Project sharing, D-1403 a+b (NEXT-RUN item 2).
+3. LEGENDS: legends must show every takeoff item on the sheet. Reproduce on a throwaway copy, list which kinds are missing today (linear, area, count, earthwork features, deducts, utility runs, site features, items from other sheets), fix, fixture + smoke with screenshots before/after.
+4. DEWATERING check: run dewatering on throwaway copies of Real bid A and Real bid B (settings matched); report each line it priced (method, pump days, $) and any "manual" lines with the reason. Do NOT move it to Live; I decide after reading.
+5. ACCOUNT AND WORKSPACE DELETION (required before paid customers). Rules:
+   - A person deletes their own account; only the owner deletes a workspace (type its name to confirm).
+   - An owner cannot delete their account while owning a workspace with other members: transfer or delete it first.
+   - Deletion takes effect at once (sign-in stops, share links revoked, billing cancelled), then data and files are erased after a 30-day grace period; restore possible until then (owner/self).
+   - Erasure order: files first, rows after; failed file deletes logged and retried nightly (alert after 3 nights); the clean-up log survives the workspace (ON DELETE SET NULL or its own table).
+   - Keep only a minimal deletion record (ids, what, when; no personal data).
+   - Founder workspaces can never be selected by the test; throwaways only.
+   - Report what the privacy policy should say about backups.
+   Proof: QT rows; smoke on throwaways for account delete, workspace delete, restore within grace, erasure after a forced grace expiry (files gone from the bucket, rows gone, record kept), a refused owner-with-members delete.
+6. VIEWPORTS: SPEC ONLY this run (docs/tasks/viewports_spec.md): several scaled areas on one sheet, each with its own scale/calibration; how measuring, snapping, legends, quantities and existing sheet scales work; items crossing a viewport; UI; migration; hours. I approve before it's built.
+Close-out when done: merge origin/staging if anything came in, fold migrations, prove, gates, FULL quantity table 0 FAIL, name scans, mirror, purge, fingerprint, ONE push per repo. Report in morning-report-2026-12-05, real-bid and pricing questions first, with NOTE_FOR_ABDULLAH.md (migration ids, what testers will notice). Status to me at the push."
+Run start (main session):
+- 00:22 UTC: every repo on umer-dev, clean, even with the 12-04 push (app e4d6d18, api 9fa1cc9, infra 93bc869, market
+  e027fe0); locks free; 13 bench containers Up.
+- Fingerprint 6467949c20cddecb, not the baseline. Read-only check (`fingerprint.sh <id> --since 2026-11-27T21:55Z` on all
+  18): only P08 (test) changed, three rows, all by the founder's own account (one takeoff item edited 23:49, one wage
+  import 23:53, a work session to 00:13 UTC). The founder's own edits: **adopted, new baseline 6467949c20cddecb.**
+- Power check (D-1401 1): the battery read was refused by the permission check (twice); not worked around. The run treats
+  the laptop as possibly on battery: checkpoint after every item and a main-session heartbeat every minute.
+- D-numbers: item 1 D-1402 (part b), item 2 D-1403 (part c), item 3 D-1405, item 4 D-1406, item 5 D-1407, item 6 D-1408.
+- Readings: item 3's "fixture" is the shared quantity table row (hard rule 8: no fixtures or test scripts; the fixture
+  suite is paused, D-1057). Item 4's copy of Real bid B needs it in the guard list's copy_sources (only P08 and Real bid
+  A are there): the brief is the per-run authorization, edited by the main session only, ids removed once the copies are
+  purged. Item 5's "QT rows" are quantity-table rows driving the api on throwaways.
+- Builders: A (items 1, 3, 4, 6), B (items 2, 5).
+
+## D-1402 (part b) — The hooks and lock.sh in the gates hash, as built (builder A, run 2026-12-05)
+**Status:** Accepted (2026-11-28, logged 00:35 UTC before any change, builder A; the founder's D-1402 answer).
+- `qt-key.sh --gates` hashes, besides `gate-commit.sh`, `gate-push.sh` and `qt-key.sh`, `lock.sh` and every live hook
+  file in `E:\Intelcost\.claude\hooks\` (the ones that run), each under its mirror path `workspace/.claude/hooks/<name>`
+  with its blob id, as `--worktree` already reads them. A missing gate script, a missing `lock.sh` or no live hook
+  gives no hash: every stamp is void (fail closed, as D-1400).
+- Nothing else changes in the stamp logic: the hook, `gate-push.sh` and `gate-commit.sh` already compare each stamp's
+  `gates` line with `qt-key.sh --gates` now, so a change to any hook or to `lock.sh` voids every older app, api, infra
+  and market stamp and the gates run fresh. QT stamps stay keyed by name to the QT inputs (they hold these files).
+- The comments that list the gate scripts (hook, gate-commit.sh, gate-push.sh, qt-key.sh) name the new set; the
+  hook edit is made live and in the mirror together, so the mirror stays equal to the live hooks.
+- Proof: the market pass of the 12-04 close-out (gates 7d53a752...) is valid before the change; after it, a
+  `git push --dry-run origin umer-dev` in the market repo is refused by the hook (no network call: the hook refuses
+  before git runs), and the refusal is pasted in the report. Then the gates run fresh and pass; one QT on exactly the
+  changed QT inputs; one infra commit, not pushed.
+
+## D-1403 (part c) — Who may share a project, as built (builder B, run 2026-12-05)
+**Status:** Accepted (2026-11-28, logged 00:40 UTC before any change, builder B; parts a and b are the founder's).
+- **One check, `share/policy.py`,** used by every Share write in `share/routes.py` (turn on, change, access key set,
+  show and clear, regenerate, preview as viewer, revoke, invites send, resend and cancel). In order: the owner and
+  admins (`canManageWorkspace`) always share; a member whose stored role is `viewer` (a custom role whose base role is
+  viewer counts as a viewer) never shares (403, `share_viewer`); a view-only workspace (expired trial, lapsed
+  subscription, locked) refuses a non-admin's share write with the usual `workspace_locked` answer (admins keep
+  administration in a view-only workspace, as today); then the workspace's mode: "All members except viewers" lets
+  every other role share, collaborators included; "Specific members" lets the ticked members; "Owner and admins
+  only" lets nobody else (403, `share_not_allowed`). Reads (the link, its invites) stay open to every member.
+- **Pricing:** with "Members may share pricing" off, a non-admin's change that turns Show pricing on (off to on) is
+  refused (403, `share_pricing_admins`); turning it off, and every other setting, is not governed; a link already
+  showing pricing is untouched. Include pricing in a copy still needs Show pricing on, so it follows.
+- **Storage (one migration, before code):** `workspace.share_mode` (varchar, check `all_but_viewers` | `specific` |
+  `admins`, default `all_but_viewers`), `workspace.members_share_pricing` (boolean, default true), a table
+  `workspace_share_member` (workspace, user, unique pair, both cascade) for the ticked members, and
+  `project_share_link.updated_by_id` (user, SET NULL). `created_by_id` already exists and is set on create. No
+  existing link changes. A ticked member who leaves keeps no right (the check reads the live membership).
+- **Api:** `GET /api/workspace/{w}/share-policy` (every member: the mode, the pricing switch, the ticked members for
+  the owner and admins, and the caller's own `can_share`, `can_share_pricing` and the one line saying who decides);
+  `PUT` the same (owner and admin only; a viewer or a non-member cannot be ticked, 422). `GET
+  /api/workspace/{w}/share-link` (owner and admin only): every active link (on and not expired) with its project,
+  created by, when, what is on (live work, pricing, GPS Export, saving a copy, access key, expiry), last opened, last
+  changed by and when; a creator no longer a member reads "(left the workspace)"; none recorded reads "before this
+  was recorded". `POST /api/workspace/{w}/share-link/{link uuid}/off` turns it off (enabled false, the same as the
+  Share switch: the same link comes back if turned on again), owner and admin only, whoever created it.
+- **App:** a new settings section, People & Access › Sharing (read by everyone, changed by owner and admins): the
+  three choices as radio cards, the member ticks under "Specific members" (viewers shown but not tickable), the
+  "Members may share pricing" switch, and for owner and admins the list of active links with Turn off. The Share
+  panel reads the policy: someone not allowed sees every control disabled and one line ("The workspace owner or an
+  admin decides who can share projects, in Settings › Sharing."); with pricing kept to admins, Show pricing is
+  disabled while off, with its own line. "Invite to workspace" and "Manage members" are unchanged.
+- Notes shown to users carry no D-number and no competitor wording.
+
+## D-1407 — Account and workspace deletion, readings before building (builder B, run 2026-12-05)
+**Status:** Accepted (2026-11-28, logged 01:10 UTC before any change, builder B; the founder's rules are D-1404 item 5).
+- **Who:** a person deletes their own account (Settings › Account, confirmed with their password). Only the owner
+  (the member whose role is owner) deletes a workspace (Settings › General, the workspace's name typed exactly).
+  An owner who owns a workspace with any other member cannot delete their account (409, `owner_has_members`, the
+  workspaces named): transfer ownership or delete the workspace first. Their workspaces with no other member are
+  deleted with the account, under the same rules.
+- **At once, workspace:** `workspace.deleted_at` and `erase_after` (+30 days) set; every member is refused in it
+  (403, `workspace_deleted`) and it leaves everyone's list; every share link turned off and pending workspace
+  invitations revoked; billing cancelled: a subscription still in force is cancelled at Stripe at once
+  (`DELETE /v1/subscriptions/{id}`, no proration asked); if Stripe refuses or cannot be reached, nothing is deleted
+  and the owner is told to try again (a deletion that leaves billing running is not "at once").
+- **At once, account:** `user.deleted_at`, `erase_after` set, `is_active` false (sign-in and every access token
+  refused, as for a disabled account), every refresh token revoked, the share links they created turned off.
+  Memberships in other people's workspaces stay until erasure (so a restore brings them back); those workspaces see
+  them as unable to sign in.
+- **Restore within the grace:** an account: signing in to a deleted account answers 401 `account_deleted` with the
+  erasure date; the sign-in page offers "Restore my account" (`POST /api/auth/restore`, email and password,
+  throttled as sign-in), which restores the account and the workspaces deleted with it. A workspace: its owner sees
+  it under Settings › Account › Deleted workspaces with Restore (`GET /api/workspace/deleted`, `POST
+  /api/workspace/{w}/restore`, owner only, account active). Share links stay off and billing is not restarted after
+  a restore; the page says so.
+- **Erasure after the grace (Celery beat, `erase-deleted`, daily 02:30 UTC):** workspaces first, then accounts.
+  Files first: every prefix `<area>/<workspace uuid>/` of every storage area (and `community/<user uuid>/` for an
+  account) is deleted; then the rows: the workspace row (everything it owns cascades), or for an account its
+  memberships, the invitations it sent (RESTRICT) and the user row. **Reading:** the rows go after the file pass even
+  if a prefix failed; the failed prefixes stay on the record and the nightly job retries them (the founder's "failed
+  file deletes logged and retried nightly"), so a storage outage never keeps personal rows past the grace. A user row
+  another workspace's work still names (a project or item they made there, RESTRICT) is anonymized instead of
+  deleted: email `erased-<uuid>@erased.invalid`, name, title, avatar, sign-up fields and preferences cleared, an
+  unusable password; the record says which.
+- **The clean-up log survives:** its own table, `deletion_record`, with no foreign key to the workspace or the user
+  (nothing cascades into it). It is also the minimal deletion record: kind (account or workspace), the subject's
+  uuid, the requester's uuid, requested, erase after, restored, erased, outcome, the prefixes, the failed ones, the
+  nightly retry count, when the alert went. No name, no email, no workspace name.
+- **Alert after 3 nights:** at the third failed nightly retry of a record, once: the worker's error log line, an
+  in-app notification and an email to every platform admin, the channel D-1325 and D-1333 built for stuck purges.
+- **Forced grace expiry, bench only:** never an api route. A bench drive, `intelcost-infra/drives/expire-grace.py
+  --workspace <uuid> | --account <email>`, runs in the api container only when ENVIRONMENT is local, refuses every id
+  and address on the guard list (founder workspaces and accounts, protected and test projects, kept workspaces, the
+  test copy, the seeded account) and anything not named `fx.`, then sets that one subject's `erase_after` in the past
+  and runs the erasure for that subject alone. Proved once with a refused attempt on a founder workspace id (the guard
+  refuses it at the command line, before any statement).
+- **Stripe fake:** `fakes/stripe/server.py` gains `DELETE /v1/subscriptions/{id}` (cancels and sends
+  `customer.subscription.deleted`, as the control route does); the fake is restarted once to load it (its state is in
+  memory and already lost at every reboot); said in the report.
+- Notes shown to users carry no D-number.
+
+## D-1405 — Legends show every takeoff item on the sheet (builder A, run 2026-12-05)
+**Status:** Accepted (2026-11-28, logged 01:10 UTC before any code, builder A; the founder's D-1404 item 3).
+**Reproduced** on a throwaway copy of P08 (test) in an `fx.` workspace, sheet C-200, legend open, Takeoff and Sitework
+tabs, with a line, an area with a deduct, an item resumed from C-100, a drawn Site Prep strip and a "Bring its markups"
+link from C-300 added through the UI and the api as the page sends them. Shown today: linear, area (net of its deducts,
+perimeter beside it), count, utility runs (their LF items) and structures (their count items), Site Features, the
+sheet's own contours and work boundary, and an item whose home is another sheet but which has a shape here (Resume on
+another sheet, D-1243). **Missing today**, though drawn on the sheet: (1) Site Prep strip areas (they are not takeoff
+items, their own table); (2) a linked sheet's existing-grade contours drawn here on Sitework (D-190 link); (3) a linked
+sheet's markups drawn here read-only ("Bring its markups", B7 / D-991).
+**Reading:**
+- "Every takeoff item on the sheet" = everything with a quantity that is drawn on the sheet as you look at it. The
+  legend follows what is drawn: a strip only when it is drawn (Markups shown), a linked sheet's contours only on
+  Sitework when they are drawn, a linked sheet's markups only when its link brings them and Markups are shown.
+- **Deducts** stay inside their area's row (the row is net), not a row of their own: a deduct is part of an area item.
+- **Strip areas:** a group "Site Prep", one row per strip drawn here, its swatch and name, quantity = the area it
+  strips on this sheet (the piece Calculate strips: clipped to the boundary, less newer strips), SF.
+- **Items from other sheets:** a group "From other sheets", one row per item and source sheet, named
+  "<item> · <sheet>", quantity = that item's quantity on its own sheet (the number it carries there), in its unit,
+  shown in muted text: it is not measured on this sheet and is never added to it. An item that has a shape here as
+  well keeps its normal row with this sheet's quantity.
+- Not legend rows (no quantity of their own on this sheet): bores, saved sections, the TIN and cut/fill pictures,
+  overlays (a picture of another sheet), annotations (notes, clouds, callouts).
+- The row list is made by one pure function in `src/lib/takeoff/legend.ts` (no React, no network), so the quantity
+  table can drive it: QT rows give it a sheet with each kind and check every kind gets its row and quantity.
+- No api change, no migration.
+
+## D-1408 — Sheet viewports, spec only (builder A, run 2026-12-05)
+**Status:** Proposed (2026-11-28, builder A; the founder's D-1404 item 6). Spec written to `docs/tasks/viewports_spec.md`;
+nothing built until the founder approves it. In short: a named, non-overlapping rectangle per drawing on a sheet,
+each with its own calibration (the calibration table loses its one-per-sheet rule and gains a viewport id); the sheet
+scale stays for everything outside every box; each shape records the viewport that holds all of it; a shape crossing a
+box edge is flagged and measured at the sheet scale (else 0 and stale), never split; earthwork keeps the sheet scale;
+no existing data changes (every quantity equal to the cent); about 39 hours. Four questions for the founder in §13.
+
+## D-1406 — Dewatering check on Real bid A and Real bid B, report only (builder A, run 2026-12-05)
+**Status:** Done, report only (2026-11-28, builder A; the founder's D-1404 item 4). No code, no Live move.
+- Copies: `drives/copy-3d-test.py --source` into one throwaway `fx.` workspace whose burden profile was set through the
+  api to the source workspace's (both real bids share one workspace and one profile; the rows are equal field by
+  field). Calculate pressed on every sheet with utility runs (Real bid A: 4 sheets, 39 runs; Real bid B: 1 sheet,
+  1 run), as a user would.
+- **Result: no dewatering line on either bid, priced or manual.** Calculate writes a dewatering line only for a run
+  whose trench reaches below the water, and the water comes only from bore water readings (`earthwork_bore_water`).
+  Neither project has a bore (Real bid A: no bores, no soil layers; Real bid B: no bores, one soil layer; its
+  Earthwork Volumes panel reads "Water table: below the bottom"). So nothing was priced and nothing went "manual".
+- To see dewatering priced on these bids, the estimator would have to enter bores with groundwater readings from the
+  geotech report: a founder question, not a guess made here.
+
+## D-1409
+### D-1409 — Dewatering: groundwater when no bores exist (2026-11-28, logged by the main session; build next run)
+Founder, verbatim, answering D-1406 Q1: "Dewatering: [give depths: Real bid A __ ft, Real bid B __ ft / read them from
+<report> / skip for now]. Queue for next run: (1) project-level "Groundwater depth (ft below grade, from geotech)" input,
+used when no bore readings exist (bores override); (2) Needs attention flag on any project with utility runs and no
+groundwater entered: "Groundwater not entered: dewatering not priced." Dewatering stays Working until both ship and it
+has priced a real bid."
+- The first choice came back unfilled (no depths, no report named): read as **skip for now** tonight. Nothing more is
+  run on Real bid A or B for dewatering this run.
+- Queued for the next run: (1) a project-level "Groundwater depth (ft below grade, from geotech)", used only when the
+  project has no bore water readings; bore readings override it. (2) A Needs attention flag on any project with
+  utility runs and no groundwater entered: "Groundwater not entered: dewatering not priced."
+- Dewatering (FEATURES row D-1331) stays 🔨 Working until both ship and it has priced a real bid.
+
+## D-1410
+### D-1410 — Viewports spec approved with changes; Run A this run (2026-11-28, logged by the main session)
+Founder, verbatim: "Viewports spec (D-1408): APPROVED with these changes.
+Q1 Flag crossing shapes (as written). Q2 Allow full nesting (a box fully inside another wins inside it); refuse partial overlaps. Q3 Earthwork in a viewport out of scope (as written). Q4 Offer found scales as viewports, never auto-create (as written).
+Add: (a) creating a viewport re-derives the shapes already inside it, shows before/after quantities, one undo step; (b) GPS Export leaves out shapes inside viewports and says so ("n shapes in viewports not exported").
+Build in two runs: Run A = migration, models, routes, scoped recompute, per-shape scale lookup in _measure/sheet_items/sub-items/deducts, crossing flag, lib/takeoff functions, QT rows (both engines). Run B = viewport tool, boxes, list, calibrate per viewport, tips, legend, Sheets tooltip, paste rescale, print, read-on-load suggestions, smoke. Queue Run A after the current run's items."
+Readings:
+- "After the current run's items" is read as **in this run**, after items 2, 3 and 5 of D-1404, before the close-out, and
+  only if usage allows (else it heads the next run's list). Builder A takes it after legends (D-1405).
+- The spec (docs/tasks/viewports_spec.md) is updated first with Q1-Q4 and additions (a) and (b), then Run A is built.
+  Addition (a)'s before/after display and undo are UI (Run B); Run A provides the scoped re-derive and its before/after
+  quantities from the api. Addition (b) touches GPS Export, a server path: Run A if it is api-only, else Run B.
+- Its migration revises whatever head exists when it is written (builder B's D-1403/D-1407 migrations may land first);
+  one head at every commit. Run B is queued for the next run. Nothing moves to Live.
+
+## D-1410 (part b)
+### D-1410 (part b) — Order tonight; Run A as its own run (2026-11-28, logged by the main session)
+Founder, verbatim: "Order tonight: finish sharing screens, legends and account deletion → close-out → push (one per repo).
+The viewports spec update (doc only) goes in tonight's push.
+THEN, only if usage allows, start Run A (viewports) as a separate run from the updated spec: its own checkpoints, its own
+close-out and one push per repo, report in morning-report-2026-12-06. If usage gets low, stop Run A at an item boundary,
+commit what's proved, and leave the rest at the top of the next run. Run B stays for a later run."
+- Replaces part a's "Run A after legends, before the close-out": tonight builder A does legends and the spec update
+  (doc only); no viewport code before tonight's close-out and push. Run A then starts as a separate run (morning-report-2026-12-06).
+
+## D-1405 (part b) — Legend rows never cut off (builder A, 2026-11-28 02:28 UTC)
+Found in the smoke: the card hides what does not fit (its rows were cut off at the bottom of the card once a sheet had
+more items than its height held, so "every item" could still be missing from view). The text now also shrinks so every
+row fits the card (title, groups and rows counted); the estimator enlarges the card to read it larger. No scroll inside
+the card (a wheel over the sheet zooms it).
+
+## D-1411
+### D-1411 — Answers to the 12-05 questions; worker import check before a save (2026-11-28, logged by the main session; build next run)
+Founder, verbatim: "Answers for the report (log in DECISIONS; build next run):
+1 Legends: correct as built.
+2 Day 30: erase personal data and project content on day 30 regardless; keep only bare file references until every file is confirmed deleted; alert if anything remains on day 40.
+3 Deleted-pending accounts stay visible, greyed: "Deleting on <date>"; after erasure, attributions show "Former member".
+4 For Abdullah: set and document database/backup retention (≤ 35 days) so the privacy policy can state it.
+5 Lapsed or view-only workspace: owners/admins only can share: correct.
+Add: before a save to worker code, check the worker module still imports; refuse the save if not."
+Readings (to build next run):
+- 1 and 5: no change; D-1405 and D-1403 stand as built.
+- 2 (D-1407 change): on day 30 every row holding personal data or project content is erased whatever the file deletes
+  did; only bare file references (bucket key, size; no names, no content) stay until each file is confirmed deleted;
+  the nightly retry goes on; if any reference remains on day 40 the alert fires (replaces "alert after 3 nights").
+- 3 (D-1407 change): during the grace a deleted account stays in member lists, greyed, "Deleting on <date>"; after
+  erasure every attribution (created by, changed by, comments, links list) reads "Former member".
+- 4: a NOTE_FOR_ABDULLAH item: set the production database and backup retention at 35 days or less and document it,
+  so the privacy policy can state it.
+- Add: a guard (the founder-gate hook or gate-commit's api path) that, before a save to api code the workers import,
+  checks the worker module still imports with the new content and refuses the save if not. Prompted by the 12-05
+  window 02:22-02:25 UTC when a broken string took every worker and beat down. Proof: a deliberate broken save refused.
+
+## D-1404 (part b)
+### D-1404 (part b) — Close-out of the 12-05 night run (2026-11-28, from 04:25 UTC; times in CLOSEOUT-LOG.md)
+Built and proved: D-1402 part b (the hooks and `lock.sh` in the gates hash; a deliberate refused market push on the old
+stamp; infra b43947a), D-1403 part c (who may share a project; migration d1403c5a7e19; api 9cb17f6, app 65b5a6f, infra
+3e04601), D-1405 (legends show every item on the sheet; app 0fee65d, infra dfde530), D-1406 (dewatering on Real bid A
+and Real bid B, report only: no line, $0.00, no groundwater entered), D-1407 (account and workspace deletion; migration
+d1407e2b9c31; api 4097547, app 6a738cf, infra 6f9b697), D-1408 and D-1410 (viewports spec, approved with changes, doc
+only). Migrations one file per commit, one head d1407e2b9c31, the bench at it; nothing folded. Nothing came in from
+origin/staging or origin/umer-dev. Gates on HEAD fresh (gates 3d9cf749004f): app app-885cdd07e990, api api-2774e0194ab8,
+market market-1e8e467c85be. Full QT 04:42-05:04 UTC: exit 0, 0 FAIL, 344 rows, stamp qt-7b116545b2f4. Fingerprint
+6467949c20cddecb at the start. Nothing moved to Live. Founder answers D-1411 applied to the report, NEXT-RUN.md and the
+note. Pushes and the end fingerprint in CLOSEOUT-LOG.md.
