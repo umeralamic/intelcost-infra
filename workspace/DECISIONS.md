@@ -39061,3 +39061,74 @@ origin/staging or origin/umer-dev. Gates on HEAD fresh (gates 3d9cf749004f): app
 market market-1e8e467c85be. Full QT 04:42-05:04 UTC: exit 0, 0 FAIL, 344 rows, stamp qt-7b116545b2f4. Fingerprint
 6467949c20cddecb at the start. Nothing moved to Live. Founder answers D-1411 applied to the report, NEXT-RUN.md and the
 note. Pushes and the end fingerprint in CLOSEOUT-LOG.md.
+
+## D-1412
+### D-1412 — Viewports Run A as its own run (2026-11-28, from ~05:20 UTC; logged by the main session)
+Started under D-1410 part b ("THEN, only if usage allows, start Run A (viewports) as a separate run from the updated
+spec: its own checkpoints, its own close-out and one push per repo, report in morning-report-2026-12-06. If usage gets
+low, stop Run A at an item boundary, commit what's proved, and leave the rest at the top of the next run.").
+- Start state: the 12-05 run closed and pushed (app 6a738cf, api 4097547, infra a79d184, market e027fe0), every repo
+  even with origin and clean, locks free, founder digest 6467949c20cddecb, alembic head d1407e2b9c31.
+- One builder, items in order with a checkpoint (commit + SECTION.md) after each: 1. migration + models + routes;
+  2. lib/takeoff functions + per-shape scale lookup (_measure, sheet items, sub-items, deducts) + scoped recompute +
+  the re-derive's before/after from the api; 3. the crossing flag; 4. GPS Export's "n shapes in viewports not exported"
+  if api-only; QT rows on both engines with each item. Then its own close-out and one push per repo.
+- No UI (Run B). Nothing moves to Live. The power read stays refused; heartbeat in every long job.
+
+## D-1412 (part b) — Viewports Run A, readings before building (the run's one builder, 2026-11-28 05:25 UTC)
+**Status:** Accepted as readings of the approved spec (`docs/tasks/viewports_spec.md`, D-1410). No UI (Run B).
+- **Tables (spec §3, §9).** `sheet_viewport`: uuid, workspace, project, sheet (cascade), `name` (120), `box`
+  [x0, y0, x1, y1] in page fractions, `sort`, `created_by_id`, times. `sheet_calibration.viewport_uuid` (null = the
+  sheet scale); `uq_calibration_per_sheet` dropped for two partial unique indexes (one null-viewport row per sheet; one
+  row per sheet and viewport). `takeoff_geometry.viewport_uuid` (indexed) and, beyond §9, `takeoff_geometry.viewport_flag`
+  (null, `crosses`: the shape spans a box edge; `apart`: a deduct with no section of its item in the same viewport,
+  which subtracts nothing). The uuid columns carry no foreign key (the project copier remaps uuids by value); the api
+  removes a viewport's scale and clears its shapes when it is deleted. No existing row is written: every new column is
+  null, so every quantity stays the same to the cent. The downgrade is refused while any viewport exists.
+- **Which shapes take a viewport.** Linear, area and count shapes of ordinary items. Contours, spots, boundaries, Site
+  Features, utility runs and earthwork lines keep the sheet scale (spec §5 Earthwork) and stay null.
+- **The viewport of a shape (spec §4).** The shape's extent is its vertices plus, for an ellipse or an arc, the points
+  where it reaches furthest along each axis inside its sweep (exact, from its parameters). Its viewport is the
+  innermost box holding every extent point. It **crosses** when it enters any other box: an extent point strictly
+  inside it, a straight edge running through its inside, an arc meeting its edge, or (an area) the box's centre inside
+  the area. So a shape inside a plan box reaching into a nested detail crosses (as §4 says). A count never crosses (it
+  needs no scale): its viewport is the one all its marks share, else none.
+- **The scale of a shape.** Its viewport's own scale; a viewport with no scale yet reads the box around it, else the
+  sheet scale (§5's "outside every calibrated viewport"), so a new unscaled box changes no quantity until it is
+  scaled. A crossing shape: the sheet scale. No scale: it adds 0 and the item is stale. The item's other rule is
+  today's: no scale of any kind on its home sheet, stale and 0.
+- **Deducts (§5).** Clipped against the positives of the same viewport only; a crossing deduct goes with the
+  sheet-scale shapes. A deduct alone in its viewport is flagged `apart` (only on a sheet with viewports).
+- **Where it is derived.** One pure module each side: `app/features/takeoff/viewport.py` (api) and
+  `src/lib/takeoff/viewports.ts` (app), line for line. The api derives and stores each shape's viewport and flag every
+  time its item is measured (`_measure`: every shape write ends there), writing a field only when it changes.
+- **Boxes.** Inside the page, at least 1 % each way. A box fully inside another nests; a partial overlap or an equal box
+  is refused 422 ("Viewports can't partly overlap: move or resize <name>, or put it fully inside <other>").
+- **Routes (§7).** `GET/POST/PATCH/DELETE .../drawing/sheet/{sheet}/viewport[/{viewport}]`. POST, PATCH and DELETE
+  answer with the viewport and `changes`: each touched item's quantity before and after (and stale before and after),
+  addition (a)'s answer; its dialog and one undo step are Run B. The calibration routes take `?viewport_uuid=` (absent:
+  the sheet scale, today's calls unchanged); `CalibrationRead` gains `viewport_uuid`; `SheetRead` gains `viewports`.
+  Realtime `drawing.viewport.changed`. **Scoped recompute:** a box change recomputes the items with a shape in the old
+  or new box (or recorded in it); a viewport's scale change those in it and in boxes nested in it; the sheet scale the
+  whole sheet, as today. Deleting a viewport deletes its scale; its shapes fall back.
+- **Copies.** Duplicate sheet copies the viewports and their scales, the shapes pointed at the copies. Project copy
+  copies `sheet_viewport`. Crop as New Page and the read on load keep only the sheet scale (Run B).
+- **Sub-items.** The api's parent primitives take each shape at its own scale. The app's sub-item preview
+  (`lib/takeoff/subItems/env.ts`) is unchanged in Run A: its callers pass the sheet scale until Run B wires viewports;
+  equal on every sheet without viewports.
+- **GPS Export (addition b) is built in the browser** (`lib/takeoff/earthwork/export`, the app's worker and dialog),
+  not the api, so it is **left to Run B**, as D-1410 allows. Run A gives `lib/takeoff` the viewport test it will use.
+- **Proof.** QT rows on both engines (the pure module each side on the same cases, hand-worked), and api rows through
+  the real routes on a throwaway removed at the end (also the run's smoke, no UI existing); every existing row equal.
+
+## D-1412 (part c) — Close-out of viewports Run A (2026-11-28, from 06:44 UTC; times in morning-report-2026-12-06/CLOSEOUT-LOG.md)
+Built and proved: items 1 to 3 of D-1412 (migration d1412a6c3f58 after d1407e2b9c31; models, routes, scoped recompute,
+each shape at its own scale in `_measure`, sheet items, sub-item primitives and deducts, the crossing flag, the pure
+module each side; api bb95bb8, app b5e0652, infra e2f494e), one commit per repo instead of three checkpoints because the
+three items share the same files. Item 4 (GPS Export's "n shapes in viewports not exported") moved to Run B: the export
+is built in the browser. One head d1412a6c3f58, the bench at it; nothing folded. Nothing came in from origin/staging or
+origin/umer-dev. Gates on HEAD fresh (gates 3d9cf749004f): app app-e3ee22c9f45b, api api-c844b96c8ad4, market
+market-1e8e467c85be. Full QT 07:00:31-07:23:21 UTC: exit 0, 0 FAIL, 344 rows, stamp qt-90d3cb3f1a5e (= the builder's
+run 2). Fingerprint 6467949c20cddecb at the start. FEATURES row stays 🔨 Working (Run A built, Run B next); nothing moved
+to Live. Two founder questions open (an unscaled new viewport; Crop as New Page and the read on load). Pushes and the
+end fingerprint in CLOSEOUT-LOG.md.
